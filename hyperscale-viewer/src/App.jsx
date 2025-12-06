@@ -5,7 +5,8 @@ import Model from './components/Model'
 import SustainabilityCharts from './components/SustainabilityCharts'
 
 export default function App() {
-  const [modelPath, setModelPath] = useState('/models/Sinzig.glb')
+  // single fixed model in public/models folder
+  const MODEL_PATH = '/models/scp_server_room.glb'
   const controlsRef = useRef()
   const [telemetry, setTelemetry] = useState([])
 
@@ -17,7 +18,9 @@ export default function App() {
         try {
           const data = JSON.parse(ev.data)
           setTelemetry((prev) => [data, ...prev].slice(0, 100))
-        } catch(e){ console.warn('bad ws msg', e) }
+        } catch (e) {
+          console.warn('bad ws msg', e)
+        }
       }
       ws.onopen = () => console.log('ws connected to mock server')
       ws.onclose = () => console.log('ws closed')
@@ -32,14 +35,19 @@ export default function App() {
       <header className="app-header">
         <h1>Hyperscale Data Center — Sustainability Dashboard</h1>
         <div className="controls-row">
-          <label style={{display:'flex',alignItems:'center',gap:8}}>
-            GLB path:
-            <input value={modelPath} onChange={(e) => setModelPath(e.target.value)} />
-          </label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <strong>Model:</strong>&nbsp;<span>{MODEL_PATH.replace('/models/', '')}</span>
+          </div>
           <button onClick={() => controlsRef.current?.reset?.()}>Reset camera</button>
-          <button onClick={() => {
-            fetch('/mock-server/snapshot').then(r=>r.json()).then(d=>alert('Snapshot:\n'+JSON.stringify(d,null,2)))
-          }}>Get snapshot</button>
+          <button
+            onClick={() => {
+              fetch('/mock-server/snapshot')
+                .then((r) => r.json())
+                .then((d) => alert('Snapshot:\n' + JSON.stringify(d, null, 2)))
+            }}
+          >
+            Get snapshot
+          </button>
         </div>
       </header>
 
@@ -49,7 +57,7 @@ export default function App() {
             <ambientLight intensity={0.6} />
             <directionalLight position={[5, 10, 7]} intensity={1.0} />
             <Suspense fallback={<Loader />}>
-              <Model glbPath={modelPath} />
+              <Model glb={MODEL_PATH} controlsRef={controlsRef} />
               <Environment preset="city" />
             </Suspense>
             <OrbitControls ref={controlsRef} enableDamping={true} maxPolarAngle={Math.PI / 2} />
@@ -61,7 +69,7 @@ export default function App() {
         </div>
       </div>
 
-      <footer className="app-footer">Tip: drop your GLB into <code>/public/models/Sinzig.glb</code></footer>
+      <footer className="app-footer">Using model <code>{MODEL_PATH}</code></footer>
     </div>
   )
 }
