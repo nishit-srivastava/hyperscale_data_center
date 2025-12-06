@@ -1,0 +1,21 @@
+:root{
+  --bg:#0f1720;
+  --card:#0b1320;
+  --muted:#9aa4b2;
+  --accent:#5dd3c6;
+}
+*{box-sizing:border-box}
+html,body,#root{height:100%;margin:0}
+body{font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue';background:linear-gradient(180deg,#071021 0%, #071a2a 100%);color:#e6eef6}
+.app-root{padding:18px;display:flex;flex-direction:column;gap:12px;height:100vh}
+.app-header{display:flex;flex-direction:column;gap:8px}
+.app-header h1{margin:0;font-size:20px}
+.controls-row{display:flex;gap:12px;align-items:center}
+.controls-row input{padding:6px 8px;border-radius:6px;border:1px solid #223344;background:#08101a;color:#e6eef6}
+.content{display:flex;gap:12px;flex:1;min-height:0}
+.viewer{flex:1;background:var(--card);border-radius:8px;overflow:hidden;min-width:360px}
+.charts{width:420px;display:flex;flex-direction:column;gap:12px}
+.charts-root{padding:12px}
+.chart-card{background:rgba(255,255,255,0.02);padding:10px;border-radius:6px}
+.app-footer{text-align:center;color:var(--muted)}
+.loader{padding:10px 14px;background:rgba(0,0,0,0.5);border-radius:6px}

@@ -1,0 +1,1 @@
+Place your GLB files in this folder under /public/models/, e.g. /public/models/new_model.glb
