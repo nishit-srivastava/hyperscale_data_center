@@ -6,7 +6,8 @@ import SustainabilityCharts from './components/SustainabilityCharts'
 
 export default function App() {
   // single fixed model in public/models folder
-  const MODEL_PATH = '/models/scp_server_room.glb'
+  //const MODEL_PATH = '/models/scp_server_room.glb'
+  const MODEL_PATH = '/models/server_room.glb'
   const controlsRef = useRef()
   const [telemetry, setTelemetry] = useState([])
 
