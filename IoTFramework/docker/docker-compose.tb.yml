@@ -1,0 +1,102 @@
+services:
+
+  postgres:
+    image: postgres:14
+    container_name: tb-postgres
+    restart: always
+    shm_size: 512m
+    environment:
+      POSTGRES_DB: thingsboard
+      POSTGRES_USER: tbuser
+      POSTGRES_PASSWORD: tbpassword
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tbuser -d thingsboard"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  timescaledb:
+    image: timescale/timescaledb:2.13.0-pg14
+    container_name: tb-timescaledb
+    restart: always
+    shm_size: 1gb
+    environment:
+      POSTGRES_DB: thingsboard_ts
+      POSTGRES_USER: tbuser
+      POSTGRES_PASSWORD: tbpassword
+    volumes:
+      - ./timescale-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tbuser -d thingsboard_ts"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: tb-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: tbmq
+      RABBITMQ_DEFAULT_PASS: tbmqpassword
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    
+
+  thingsboard:
+    image: thingsboard/tb-postgres:3.7.0
+    container_name: tb_ts
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      timescaledb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8080:9090"
+    environment:    
+      
+      
+      TB_DB_TYPE: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/thingsboard
+      SPRING_DATASOURCE_USERNAME: tbuser
+      SPRING_DATASOURCE_PASSWORD: tbpassword
+
+      TB_TIMESERIES_DB_TYPE: timescale
+      TB_TIMESERIES_DB_HOST: timescaledb
+      TB_TIMESERIES_DB_PORT: 5432
+      TB_TIMESERIES_DB_NAME: thingsboard_ts
+      TB_TIMESERIES_DB_USERNAME: tbuser
+      TB_TIMESERIES_DB_PASSWORD: tbpassword
+
+      TB_QUEUE_TYPE: rabbitmq
+      TB_QUEUE_RABBIT_MQ_HOST: rabbitmq
+      TB_QUEUE_RABBIT_MQ_PORT: 5672
+      TB_QUEUE_RABBIT_MQ_USERNAME: tbmq
+      TB_QUEUE_RABBIT_MQ_PASSWORD: tbmqpassword
+
+      TB_QUEUE_RABBIT_MQ_RETRY_INTERVAL: 5000
+      TB_QUEUE_RABBIT_MQ_MAX_RETRIES: 10
+
+      TB_SERVICE_ID: tb-ce-1
+      TB_WEB_ENQUEUE_REQUEST_TIMEOUT: 60000
+
+    volumes:
+      - ./tb-data:/data
+      - ./tb-data/logs:/var/log/thingsboard
+
+volumes:
+  rabbitmq-data:

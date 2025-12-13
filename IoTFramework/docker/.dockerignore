@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+
+# Docker
+docker-compose.override.yml
+
+# Runtime data (MUST NOT go into images)
+tb-data/
+postgres-data/
+timescale-data/
+rabbitmq-data/
+
+# Logs
+*.log
+logs/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Archives
+*.tar
+*.gz
+*.zip
