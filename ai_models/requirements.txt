@@ -1,0 +1,24 @@
+# Core
+numpy
+pandas
+scipy
+
+# Database
+psycopg2-binary
+
+# Time & utilities
+python-dateutil
+tqdm
+
+# ML / Deep Learning
+scikit-learn
+tensorflow
+keras
+
+# Jupyter
+jupyterlab
+ipykernel
+
+# Visualization (optional but useful)
+matplotlib
+seaborn

@@ -1,0 +1,67 @@
+# Core
+numpy
+pandas
+scipy
+
+# Database
+psycopg2-binary
+python-dateutil
+
+# ML / AI
+scikit-learn
+tensorflow
+keras
+
+# Dev / Notebooks
+jupyterlab
+ipykernel
+tqdm
+
+# Visualization
+matplotlib
+seaborn
+
+library
+
+
+🔹 Core numerical & data handling
+
+numpy – Fundamental numerical computing library for arrays, tensors, and matrix operations used by ML models.
+
+pandas – Data manipulation and time-series processing library for cleaning and transforming telemetry data.
+
+🔹 Scientific utilities
+
+scipy – Scientific computing tools used for signal processing, statistics, and numerical operations.
+
+python-dateutil – Advanced date and time parsing for handling irregular telemetry timestamps.
+
+tqdm – Lightweight progress bars for long-running data extraction and preprocessing tasks.
+
+🔹 Database connectivity
+
+psycopg2-binary – PostgreSQL/TimescaleDB driver used to fetch telemetry data from ThingsBoard storage.
+
+🔹 Machine learning & deep learning
+
+scikit-learn – Classical ML utilities for scaling, normalization, train–test split, and evaluation metrics.
+
+tensorflow – Deep learning framework used to implement LSTM/GRU forecasting and autoencoder models.
+
+keras – High-level neural network API (on top of TensorFlow) for rapid RNN model development.
+
+🔹 Jupyter & interactive development
+
+jupyterlab – Interactive notebook environment for data exploration, preprocessing, and model development.
+
+ipykernel – Connects the Python virtual environment as a selectable kernel inside JupyterLab.
+
+🔹 Visualization (optional but recommended)
+
+matplotlib – Low-level plotting library for visualizing time-series trends and model outputs.
+
+seaborn – High-level statistical visualization library for cleaner exploratory data analysis plots.
+
+🧠 One-sentence summary (for README / thesis)
+
+This project uses Python with Pandas and NumPy for telemetry preprocessing, Psycopg2 for TimescaleDB access, TensorFlow/Keras for RNN-based forecasting and anomaly detection, and JupyterLab for interactive AI experimentation.

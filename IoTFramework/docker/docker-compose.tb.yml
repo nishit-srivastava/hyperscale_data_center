@@ -2,10 +2,13 @@ services:
 
   postgres:
     image: postgres:14
+    ports:
+      - "5434:5432"
     container_name: tb-postgres
     restart: always
     shm_size: 512m
     environment:
+      #TZ: Asia/Kolkata
       POSTGRES_DB: thingsboard
       POSTGRES_USER: tbuser
       POSTGRES_PASSWORD: tbpassword
@@ -19,10 +22,13 @@ services:
 
   timescaledb:
     image: timescale/timescaledb:2.13.0-pg14
+    ports:
+      - "5433:5432"
     container_name: tb-timescaledb
     restart: always
     shm_size: 1gb
     environment:
+      #TZ: Asia/Kolkata
       POSTGRES_DB: thingsboard_ts
       POSTGRES_USER: tbuser
       POSTGRES_PASSWORD: tbpassword
@@ -72,7 +78,7 @@ services:
       - "5685:5685/udp"   # LwM2M
       - "5686:5686/udp"   # LwM2M bootstrap
     environment:    
-      
+      #TZ: Asia/Kolkata
       
       TB_DB_TYPE: postgres
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/thingsboard
