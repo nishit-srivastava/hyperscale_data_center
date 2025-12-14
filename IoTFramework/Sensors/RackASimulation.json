@@ -10,7 +10,7 @@
         "id": "9b92f1a3755e3236",
         "type": "inject",
         "z": "e673fce1aa0decac",
-        "name": "Every 5 seconds",
+        "name": "Every 10 seconds",
         "props": [],
         "repeat": "10",
         "crontab": "",

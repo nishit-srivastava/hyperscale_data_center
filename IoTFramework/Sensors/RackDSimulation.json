@@ -1,0 +1,45 @@
+[
+  {
+    "id": "flow_rackD",
+    "type": "tab",
+    "label": "RackD Telemetry (Batch Load)",
+    "disabled": false
+  },
+  {
+    "id": "inject_rackD",
+    "type": "inject",
+    "z": "flow_rackD",
+    "name": "Every 10 seconds",
+    "repeat": "10",
+    "once": true,
+    "onceDelay": "1",
+    "x": 140,
+    "y": 140,
+    "wires": [["fn_rackD"]]
+  },
+  {
+    "id": "fn_rackD",
+    "type": "function",
+    "z": "flow_rackD",
+    "name": "RackD – Batch Processing",
+    "func": "// Rack D – Batch / scheduled workload\n\nlet cpuLoad = Math.min(100, 25 + Math.random() * 55); // 25–80%\nlet ambient = 24 + Math.random() * 2;\nlet inlet = ambient + cpuLoad * 0.055;\nlet exhaust = inlet + 7 + Math.random() * 2;\n\nconst payload = {\n  rack_id: \"RackD\",\n  workload_type: \"batch_processing\",\n  cpu_util: Number(cpuLoad.toFixed(2)),\n  power_kw: Number((0.9 + cpuLoad * 0.014).toFixed(2)),\n  ambient_temp_c: Number(ambient.toFixed(2)),\n  inlet_temp_c: Number(inlet.toFixed(2)),\n  exhaust_temp_c: Number(exhaust.toFixed(2)),\n  fan_speed_rpm: Math.round(2400 + cpuLoad * 32),\n  humidity: Number((43 + Math.random() * 6).toFixed(2))\n};\n\nmsg.payload =\n  \"mosquitto_pub -d -q 1 \" +\n  \"-h 192.168.29.21 -p 1883 \" +\n  \"-t v1/devices/me/telemetry \" +\n  \"-u d3badznaypit2z7xqg4x \" +\n  \"-m \\\"\" + JSON.stringify(payload).replace(/\"/g, '\\\\\"') + \"\\\"\";\n\nreturn msg;",
+    "x": 430,
+    "y": 140,
+    "wires": [["exec_rackD", "dbg_cmd_D"]]
+  },
+  {
+    "id": "exec_rackD",
+    "type": "exec",
+    "z": "flow_rackD",
+    "name": "Exec mosquitto_pub",
+    "command": "",
+    "addpay": "payload",
+    "x": 720,
+    "y": 140,
+    "wires": [["dbg_out_D"], ["dbg_err_D"], ["dbg_rc_D"]]
+  },
+  { "id": "dbg_cmd_D", "type": "debug", "z": "flow_rackD", "name": "CMD", "complete": "payload", "x": 720, "y": 80 },
+  { "id": "dbg_out_D", "type": "debug", "z": "flow_rackD", "name": "stdout", "complete": "payload", "x": 980, "y": 100 },
+  { "id": "dbg_err_D", "type": "debug", "z": "flow_rackD", "name": "stderr", "complete": "payload", "x": 980, "y": 140 },
+  { "id": "dbg_rc_D", "type": "debug", "z": "flow_rackD", "name": "return code", "complete": "payload", "x": 980, "y": 180 }
+]
