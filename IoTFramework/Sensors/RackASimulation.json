@@ -1,0 +1,135 @@
+[
+    {
+        "id": "e673fce1aa0decac",
+        "type": "tab",
+        "label": "RackA Telemetry (mosquitto_pub + debug)",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "9b92f1a3755e3236",
+        "type": "inject",
+        "z": "e673fce1aa0decac",
+        "name": "Every 5 seconds",
+        "props": [],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "x": 140,
+        "y": 140,
+        "wires": [
+            [
+                "c3fc4672337b5501"
+            ]
+        ]
+    },
+    {
+        "id": "c3fc4672337b5501",
+        "type": "function",
+        "z": "e673fce1aa0decac",
+        "name": "RackA – Build mosquitto_pub cmd",
+        "func": "// RackA telemetry (Node-RED safe – no require)\n\n// Simulated but realistic CPU load\nlet cpuLoad = Math.min(100, Math.max(0, 30 + Math.random() * 50));\n\nlet ambient = 25 + Math.random();\nlet inlet = ambient + cpuLoad * 0.05;\nlet exhaust = inlet + 5 + Math.random();\n\nconst payload = {\n  rack_id: \"RackA\",\n  cpu_util: Number(cpuLoad.toFixed(2)),\n  power_kw: Number((0.5 + cpuLoad * 0.01).toFixed(2)),\n  ambient_temp_c: Number(ambient.toFixed(2)),\n  inlet_temp_c: Number(inlet.toFixed(2)),\n  exhaust_temp_c: Number(exhaust.toFixed(2)),\n  fan_speed_rpm: Math.round(2000 + cpuLoad * 30),\n  humidity: Number((45 + Math.random() * 5).toFixed(2))\n};\n\n// Build mosquitto_pub command\nmsg.payload =\n  \"mosquitto_pub -d -q 1 \" +\n  \"-h 192.168.29.21 -p 1883 \" +\n  \"-t v1/devices/me/telemetry \" +\n  \"-u dbgh5l4z14nfwelfd70z \" +\n  \"-m \\\"\" + JSON.stringify(payload).replace(/\"/g, '\\\\\"') + \"\\\"\";\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 140,
+        "wires": [
+            [
+                "0b650e34a91131ea",
+                "6e601439b6d6d90a"
+            ]
+        ]
+    },
+    {
+        "id": "0b650e34a91131ea",
+        "type": "exec",
+        "z": "e673fce1aa0decac",
+        "command": "",
+        "addpay": "payload",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "Exec mosquitto_pub",
+        "x": 720,
+        "y": 140,
+        "wires": [
+            [
+                "750ff2988d8cce61"
+            ],
+            [
+                "cfc10e9f424146ec"
+            ],
+            [
+                "da2806ccc5ef334f"
+            ]
+        ]
+    },
+    {
+        "id": "6e601439b6d6d90a",
+        "type": "debug",
+        "z": "e673fce1aa0decac",
+        "name": "CMD (what is executed)",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 720,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "750ff2988d8cce61",
+        "type": "debug",
+        "z": "e673fce1aa0decac",
+        "name": "mosquitto stdout",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 980,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "cfc10e9f424146ec",
+        "type": "debug",
+        "z": "e673fce1aa0decac",
+        "name": "mosquitto stderr (ERROR)",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 1010,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "da2806ccc5ef334f",
+        "type": "debug",
+        "z": "e673fce1aa0decac",
+        "name": "Return code",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 960,
+        "y": 180,
+        "wires": []
+    }
+]

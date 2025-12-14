@@ -67,6 +67,10 @@ services:
         condition: service_healthy
     ports:
       - "8080:9090"
+      - "1883:1883"   
+      - "5683:5683/udp"   # CoAP
+      - "5685:5685/udp"   # LwM2M
+      - "5686:5686/udp"   # LwM2M bootstrap
     environment:    
       
       
