@@ -1,6 +1,7 @@
 import psycopg2
 import pandas as pd
 import numpy as np
+from datetime import datetime, timedelta
 
 # # 1. Configuration
 # DB_CONFIG = {
@@ -21,12 +22,21 @@ DB_CONFIG = {
 }
 
 
-DEVICE_NAME = 'RackA_Device' # Ensure this matches your specific device name in ThingsBoard
-OUTPUT_FILE = 'rack_a_telemetry.csv'
+DEVICE_NAME = 'RackD_Device' # Ensure this matches your specific device name in ThingsBoard
+OUTPUT_FILE = './data/rack_D_telemetry.csv'
+# --- NEW: Define Time Range ---
+# Example: Get data for the last 7 days
+end_date = datetime.now()
+start_date = end_date - timedelta(days=7)
 
-# 2. SQL Query
-# We fetch specific keys derived from your Node-RED snippet.
-# We use COALESCE to grab the value from whichever column (double or long) it sits in.
+# Convert to Unix Timestamp in Milliseconds (ThingsBoard format)
+start_ts = int(start_date.timestamp() * 1000)
+end_ts = int(end_date.timestamp() * 1000)
+
+print(f"Fetching data from {start_date} to {end_date}")
+
+# --- UPDATED SQL QUERY ---
+# Added: AND t.ts >= %s AND t.ts < %s
 query = """
 SELECT
     to_timestamp(t.ts / 1000.0) AS time_utc,
@@ -36,24 +46,20 @@ FROM ts_kv t
 JOIN device d ON d.id = t.entity_id
 JOIN key_dictionary k ON k.key_id = t.key
 WHERE d.name = %s
-  AND k.key IN (
-      'cpu_util', 
-      'power_kw', 
-      'ambient_temp_c', 
-      'inlet_temp_c', 
-      'exhaust_temp_c', 
-      'fan_speed_rpm', 
-      'humidity'
-  )
+  AND k.key IN ('cpu_util', 'power_kw', 'ambient_temp_c', 
+                'inlet_temp_c', 'exhaust_temp_c', 'fan_speed_rpm', 'humidity')
+  AND t.ts >= %s 
+  AND t.ts < %s
 ORDER BY t.ts ASC;
 """
+
 
 try:
     print(f"Connecting to database to fetch data for {DEVICE_NAME}...")
     
     with psycopg2.connect(**DB_CONFIG) as conn:
         # Read raw EAV data
-        df_raw = pd.read_sql(query, conn, params=(DEVICE_NAME,))
+        df_raw = pd.read_sql(query, conn, params=(DEVICE_NAME, start_ts, end_ts))
 
     if df_raw.empty:
         print("No data found! Check if the Device Name is correct or if telemetry exists.")

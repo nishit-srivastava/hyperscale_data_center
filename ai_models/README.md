@@ -32,7 +32,7 @@ flat datasets for:
 ## Run
 
 ```bash
-cd ai
+cd ai_models
 python -m venv env
 env\Scripts\activate
 

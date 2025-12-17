@@ -1,25 +1,31 @@
+# -------------------------
 # Python
+# -------------------------
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Virtual env
+# -------------------------
+# Virtual environments
+# -------------------------
 env/
 .venv/
 
+# -------------------------
 # Jupyter
+# -------------------------
 .ipynb_checkpoints/
 
-# Data outputs
+# -------------------------
+# Data (DO NOT COMMIT)
+# -------------------------
+*.csv
+*.parquet
+*.npz
+*.npy
+
 data/raw/*
 data/processed/*
 !data/raw/.keep
-!data/processed/.keep
-
-# Models
-models/*
-
-# OS
-.DS_Store
-Thumbs.db
+!data
