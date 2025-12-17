@@ -80,10 +80,18 @@ services:
     environment:    
       #TZ: Asia/Kolkata
       
-      TB_DB_TYPE: postgres
+      DATABASE_ENTITIES_TYPE: sql
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/thingsboard
       SPRING_DATASOURCE_USERNAME: tbuser
       SPRING_DATASOURCE_PASSWORD: tbpassword
+
+      # 1. TELL THINGSBOARD TO USE TIMESCALE LOGIC
+      DATABASE_TS_TYPE: timescale
+      DATABASE_TS_LATEST_TYPE: timescale
+      #DATABASE_TS_MAX_INTERVALS: timescale    
+      SPRING_DATASOURCE_TS_URL: jdbc:postgresql://timescaledb:5432/thingsboard_ts
+      SPRING_DATASOURCE_TS_USERNAME: tbuser
+      SPRING_DATASOURCE_TS_PASSWORD: tbpassword
 
       TB_TIMESERIES_DB_TYPE: timescale
       TB_TIMESERIES_DB_HOST: timescaledb

@@ -7,6 +7,17 @@ Server ip
 Rack A Telmetry 
 access token dbgh5l4z14nfwelfd70z
 
+Rack B
+
+token anjutlm67oiegbxbk0h1
+
+Rack C
+
+token svngr613xtq8072xa97i
+
+Rack D
+
+token d3badznaypit2z7xqg4x
 
 sudo apt update
 sudo apt install -y mosquitto-clients

@@ -24,3 +24,6 @@ Network tb_default        Created                                               
 172.27.0.3      rabbitmq
 nishit@nishit-s:~/tb$ docker exec -it tb_ts nc -zv rabbitmq 5672
 OCI runtime exec failed: exec failed: unable to start container process: exec: "nc": executable file not found in $PATH: unknown
+
+
+docker exec -it 5d414c0db03d psql -U tbuser -d thingsboard_ts
