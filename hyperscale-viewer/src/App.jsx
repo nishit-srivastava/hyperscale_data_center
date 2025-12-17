@@ -11,25 +11,25 @@ export default function App() {
   const controlsRef = useRef()
   const [telemetry, setTelemetry] = useState([])
 
-  useEffect(() => {
-    let ws
-    try {
-      ws = new WebSocket('ws://localhost:8081')
-      ws.onmessage = (ev) => {
-        try {
-          const data = JSON.parse(ev.data)
-          setTelemetry((prev) => [data, ...prev].slice(0, 100))
-        } catch (e) {
-          console.warn('bad ws msg', e)
-        }
-      }
-      ws.onopen = () => console.log('ws connected to mock server')
-      ws.onclose = () => console.log('ws closed')
-    } catch (e) {
-      console.warn('ws error', e)
-    }
-    return () => ws?.close()
-  }, [])
+  // useEffect(() => {
+  //   let ws
+  //   try {
+  //     ws = new WebSocket('ws://localhost:8081')
+  //     ws.onmessage = (ev) => {
+  //       try {
+  //         const data = JSON.parse(ev.data)
+  //         setTelemetry((prev) => [data, ...prev].slice(0, 100))
+  //       } catch (e) {
+  //         console.warn('bad ws msg', e)
+  //       }
+  //     }
+  //     ws.onopen = () => console.log('ws connected to mock server')
+  //     ws.onclose = () => console.log('ws closed')
+  //   } catch (e) {
+  //     console.warn('ws error', e)
+  //   }
+  //   return () => ws?.close()
+  // }, [])
 
   return (
     <div className="app-root">
