@@ -1,0 +1,71 @@
+# ================================
+# Visual Studio / .NET
+# ================================
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build outputs
+bin/
+obj/
+
+# Rider
+.idea/
+*.sln.iml
+
+# ================================
+# .NET publish artifacts
+# ================================
+publish/
+artifacts/
+
+# ================================
+# Logs & runtime data
+# ================================
+*.log
+logs/
+*.tmp
+
+# ================================
+# OS files
+# ================================
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ================================
+# App configuration
+# ================================
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Local.json
+
+# (Keep base appsettings.json tracked)
+!appsettings.json
+
+# ================================
+# Secrets (just in case)
+# ================================
+*.pfx
+*.pem
+*.key
+*.crt
+*.env
+
+# ================================
+# Test artifacts
+# ================================
+*.trx
+TestResults/
+
+# ================================
+# NuGet
+# ================================
+*.nupkg
+.nuget/
+packages/
+
+# ================================
+# Tempor

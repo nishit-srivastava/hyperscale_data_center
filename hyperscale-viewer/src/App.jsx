@@ -36,7 +36,7 @@ export default function App() {
       <header className="app-header">
         <h1>Hyperscale Data Center — Sustainability Dashboard</h1>
         <div className="controls-row">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <strong>Model:</strong>&nbsp;<span>{MODEL_PATH.replace('/models/', '')}</span>
           </div>
           <button onClick={() => controlsRef.current?.reset?.()}>Reset camera</button>
@@ -48,7 +48,7 @@ export default function App() {
             }}
           >
             Get snapshot
-          </button>
+          </button> */}
         </div>
       </header>
 
@@ -70,7 +70,7 @@ export default function App() {
         </div>
       </div>
 
-      <footer className="app-footer">Using model <code>{MODEL_PATH}</code></footer>
+      {/* <footer className="app-footer">Using model <code>{MODEL_PATH}</code></footer> */}
     </div>
   )
 }
