@@ -14,6 +14,10 @@ tqdm
 scikit-learn
 tensorflow
 keras
+torch
+torch
+torchvision
+torchaudio
 
 # Jupyter
 jupyterlab
