@@ -19,7 +19,7 @@ export default function Model({
   onZoomReady,
   showHTML = true,
 }) {
-  const modelPath = glb || glbPath || '/models/scp_server_room.glb'
+  const modelPath = glb || glbPath || '/models/server_room.glb' //server_room.glb
   if (!modelPath) {
     console.warn('Model: no glb path provided')
   }

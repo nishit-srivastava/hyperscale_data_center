@@ -47,7 +47,7 @@ const formatValue = (key, value) => {
 };
 
 
-export default function SustainabilityCharts() {
+export default function LiveOperationsPanel() {
   const wsRef = useRef(null);
 
   const [token, setToken] = useState(null);
