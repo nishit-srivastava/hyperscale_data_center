@@ -257,7 +257,7 @@ export default function Model({
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
-            <h2 style={{ margin: 0 }}>Sinzig plant</h2>
+            {/* <h2 style={{ margin: 0 }}>Sinzig plant</h2>
             {showInfo && (
               <>
                 <p style={{ marginBottom: '0px', marginTop: '15px' }}>
@@ -271,7 +271,7 @@ export default function Model({
                   On-Time Delivery Rate: 85%
                 </p>
               </>
-            )}
+            )} */}
           </div>
         </Html>
       )}

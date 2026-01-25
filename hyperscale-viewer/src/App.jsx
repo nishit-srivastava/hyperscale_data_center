@@ -34,7 +34,7 @@ export default function App() {
   return (
     <div className="app-root">
       <header className="app-header">
-        <h1>Hyperscale Data Center — Sustainability Dashboard</h1>
+        <h1>Hyperscale Data Center — Digital Twin</h1>
         <div className="controls-row">
           {/* <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <strong>Model:</strong>&nbsp;<span>{MODEL_PATH.replace('/models/', '')}</span>

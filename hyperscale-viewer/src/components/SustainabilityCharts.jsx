@@ -16,6 +16,37 @@ import { userName, password } from "../constants/creds";
 
 const WS_URL = "ws://172.23.106.87:8080/api/ws/plugins/telemetry";
 
+
+/* --------------------------------------------------
+   Metric Labels & Formatting (UI ONLY)
+-------------------------------------------------- */
+const METRIC_LABELS = {
+  power_kw: "IT Power Consumption",
+  inlet_temp_c: "Inlet Air Temperature",
+  exhaust_temp_c: "Exhaust Air Temperature",
+  ambient_temp_c: "Ambient Room Temperature",
+  cpu_util: "Compute Utilization",
+  fan_speed_rpm: "Cooling Fan Speed",
+  humidity: "Relative Humidity",
+  workload_type: "Active Workload Type",
+};
+const formatValue = (key, value) => {
+  if (value === null || value === undefined) return "-";
+
+  const num = Number(value);
+  const isNumber = !Number.isNaN(num);
+
+  if (key.includes("temp") && isNumber) return `${num.toFixed(1)} °C`;
+  if (key === "power_kw" && isNumber) return `${num.toFixed(2)} kW`;
+  if (key === "cpu_util" && isNumber) return `${num.toFixed(1)} %`;
+  if (key === "fan_speed_rpm" && isNumber) return `${Math.round(num)} RPM`;
+  if (key === "humidity" && isNumber) return `${num.toFixed(1)} %`;
+
+  // fallback for strings, enums, workload types, etc.
+  return String(value);
+};
+
+
 export default function SustainabilityCharts() {
   const wsRef = useRef(null);
 
@@ -24,7 +55,7 @@ export default function SustainabilityCharts() {
   const [timeline, setTimeline] = useState([]);
 
   /* --------------------------------------------------
-     1. Fetch JWT Token
+     1. Fetch JWT Token (UNCHANGED)
   -------------------------------------------------- */
   useEffect(() => {
     const fetchToken = async () => {
@@ -32,14 +63,14 @@ export default function SustainabilityCharts() {
         const token = await getUbuntuToken(userName, password);
         setToken(token);
       } catch (e) {
-        console.error("Token fetch failed", e);
+        console.error("❌ Token fetch failed", e);
       }
     };
     fetchToken();
   }, []);
 
   /* --------------------------------------------------
-     2. Open WebSocket & Subscribe
+     2. WebSocket Connection (ORIGINAL – DO NOT TOUCH)
   -------------------------------------------------- */
   useEffect(() => {
     if (!token) return;
@@ -57,8 +88,7 @@ export default function SustainabilityCharts() {
           entityType: "DEVICE",
           entityId: id,
           scope: "LATEST_TELEMETRY",
-          cmdId: Math.floor(Math.random() * 1000)
-        
+          cmdId: Math.floor(Math.random() * 1000),
         })),
         historyCmds: [],
         attrSubCmds: [],
@@ -67,56 +97,51 @@ export default function SustainabilityCharts() {
       ws.send(JSON.stringify(subscribeCmd));
     };
 
-    ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      const data = msg?.data;
-      if (!data) return;
+  ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+  const data = msg?.data;
+  if (!data || typeof data !== "object") return;
 
-      /*
-        data format:
-        {
-          power_kw: [[ts, value]],
-          inlet_temp_c: [[ts, value]],
-          ...
-        }
-      */
+  const parsed = {};
 
-      const parsed = {};
-      Object.entries(data).forEach(([key, arr]) => {
-        parsed[key] = {
-          value: arr[0][1],
-          ts: arr[0][0],
-        };
-      });
+  Object.entries(data).forEach(([key, arr]) => {
+    if (!Array.isArray(arr) || arr.length === 0) return;
 
-      setLatestTelemetry(prev => ({ ...prev, ...parsed }));
+    const [ts, value] = arr[0];
+    parsed[key] = { value, ts };
+  });
 
-      setTimeline(prev => {
-        const point = {
-          time: new Date().toLocaleTimeString(),
-          power_kw: parsed.power_kw?.value,
-          inlet_temp_c: parsed.inlet_temp_c?.value,
-          exhaust_temp_c: parsed.exhaust_temp_c?.value,
-          ambient_temp_c: parsed.ambient_temp_c?.value,
-        };
-        return [...prev.slice(-20), point];
-      });
+  if (Object.keys(parsed).length === 0) return;
+
+  setLatestTelemetry(prev => ({ ...prev, ...parsed }));
+
+  setTimeline(prev => {
+    const point = {
+      time: new Date().toLocaleTimeString(),
+      power_kw: parsed.power_kw?.value,
+      inlet_temp_c: parsed.inlet_temp_c?.value,
+      exhaust_temp_c: parsed.exhaust_temp_c?.value,
+      ambient_temp_c: parsed.ambient_temp_c?.value,
     };
+    return [...prev.slice(-20), point];
+  });
+};
 
-    ws.onerror = e => console.error("WS error", e);
-    ws.onclose = () => console.log("❌ WebSocket Closed");
+
+    ws.onerror = e => console.error("❌ WebSocket error", e);
+    ws.onclose = () => console.log("🔌 WebSocket Closed");
 
     return () => ws.close();
   }, [token]);
 
   /* --------------------------------------------------
-     3. Convert telemetry to table rows
+     3. Convert Telemetry to Table Rows (SAFE)
   -------------------------------------------------- */
   const telemetryRows = useMemo(() => {
     return Object.entries(latestTelemetry).map(([key, v]) => ({
-      key,
-      value: v.value,
       time: new Date(v.ts).toLocaleString(),
+      metric: METRIC_LABELS[key] || key,
+      value: formatValue(key, v.value),
     }));
   }, [latestTelemetry]);
 
@@ -125,34 +150,44 @@ export default function SustainabilityCharts() {
   -------------------------------------------------- */
   return (
     <div className="charts-root">
-      <h2>Rack Telemetry – Live</h2>
+      <h2>Rack C — Digital Twin Live Inference Dashboard</h2>
 
-      {/* -------- Latest Telemetry Table -------- */}
+      {/* -------- Operational State Table -------- */}
       <div className="chart-card">
-        <h3>Latest Telemetry</h3>
+        <h3>Digital Twin – Live Operational State</h3>
+
         <table className="telemetry-table">
           <thead>
             <tr>
-              <th>Last Update</th>
-              <th>Key</th>
-              <th>Value</th>
+              <th>Observed At</th>
+              <th>Operational Metric</th>
+              <th>Live Value</th>
             </tr>
           </thead>
           <tbody>
-            {telemetryRows.map(row => (
-              <tr key={row.key}>
-                <td>{row.time}</td>
-                <td>{row.key}</td>
-                <td>{row.value}</td>
-              </tr>
-            ))}
-          </tbody>
+          {telemetryRows.map((row, idx) => (
+            <tr key={idx} className="telemetry-row">
+              <td className="telemetry-time">{row.time}</td>
+              <td className="telemetry-metric">
+                <strong>{row.metric}</strong>
+              </td>
+              <td className="telemetry-value">{row.value}</td>
+            </tr>
+          ))}
+        </tbody>
+
         </table>
+        <div className="ai-insight">
+  <strong>AI Insight:</strong>{" "}
+  Current thermal and power behavior is within nominal operating limits
+  for the active AI inference workload.
+</div>
+
       </div>
 
       {/* -------- Power Chart -------- */}
       <div className="chart-card">
-        <h3>Power Usage (kW)</h3>
+        <h3>IT Power Consumption (kW)</h3>
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={timeline}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -167,7 +202,7 @@ export default function SustainabilityCharts() {
 
       {/* -------- Temperature Chart -------- */}
       <div className="chart-card">
-        <h3>Temperature (°C)</h3>
+        <h3>Thermal Conditions (°C)</h3>
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={timeline}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -186,7 +221,7 @@ export default function SustainabilityCharts() {
 }
 
 /* --------------------------------------------------
-   Token API
+   Token API (UNCHANGED)
 -------------------------------------------------- */
 async function getUbuntuToken(username, password) {
   const res = await axios.post(

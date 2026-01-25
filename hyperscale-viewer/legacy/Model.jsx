@@ -141,23 +141,7 @@ export default function Model({
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
-            <h2 style={{ margin: 0 }}>Sinzig plant</h2>
-            {showInfo && (
-              <>
-                <p style={{ marginBottom: '0px', marginTop: '15px' }}>
-                  Capacity Utilization Rate: 50%
-                </p>
-                <p style={{ marginBottom: '0px', marginTop: '15px' }}>
-                  Production Throughput: 57%
-                </p>
-                <p style={{ marginBottom: '0px', marginTop: '15px' }}>
-                  Defect Rate: 3.5%
-                </p>
-                <p style={{ marginBottom: '0px', marginTop: '15px' }}>
-                  On-Time Delivery Rate: 85%
-                </p>
-              </>
-            )}
+            
             {/* {scene && (
               <button
                 onClick={() =>
