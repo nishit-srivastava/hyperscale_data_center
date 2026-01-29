@@ -1,0 +1,275 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@layer base {
+  :root {
+    /* Light industrial theme */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 187 85% 43%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 45 93% 47%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 187 85% 43%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens for data visualization */
+    --data-cyan: 187 85% 43%;
+    --data-teal: 172 66% 40%;
+    --data-amber: 45 93% 47%;
+    --data-red: 0 84% 60%;
+    --data-green: 142 76% 36%;
+    --data-purple: 262 83% 58%;
+
+    /* Glow effects (subtle for light mode) */
+    --glow-cyan: 0 0 12px hsl(187 85% 43% / 0.25);
+    --glow-amber: 0 0 12px hsl(45 93% 47% / 0.25);
+    --glow-green: 0 0 12px hsl(142 76% 36% / 0.25);
+
+    /* Glass effect */
+    --glass-bg: hsl(0 0% 100% / 0.8);
+    --glass-border: hsl(214 32% 91% / 0.8);
+  }
+
+  .dark {
+    /* Deep dark industrial theme */
+    --background: 222 47% 6%;
+    --foreground: 210 40% 96%;
+
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 96%;
+
+    --primary: 187 85% 53%;
+    --primary-foreground: 222 47% 6%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 96%;
+
+    --muted: 217 33% 14%;
+    --muted-foreground: 215 20% 55%;
+
+    --accent: 45 93% 58%;
+    --accent-foreground: 222 47% 6%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142 76% 45%;
+    --success-foreground: 222 47% 6%;
+
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 187 85% 53%;
+
+    /* Custom tokens for data visualization */
+    --data-cyan: 187 85% 53%;
+    --data-teal: 172 66% 50%;
+    --data-amber: 45 93% 58%;
+    --data-red: 0 84% 60%;
+    --data-green: 142 76% 45%;
+    --data-purple: 262 83% 58%;
+
+    /* Glow effects */
+    --glow-cyan: 0 0 20px hsl(187 85% 53% / 0.4);
+    --glow-amber: 0 0 20px hsl(45 93% 58% / 0.4);
+    --glow-green: 0 0 20px hsl(142 76% 45% / 0.4);
+
+    /* Glass effect */
+    --glass-bg: hsl(222 47% 8% / 0.7);
+    --glass-border: hsl(217 33% 25% / 0.5);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Monospace for data values */
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  /* Glass panel effect */
+  .glass-panel {
+    @apply bg-card/70 backdrop-blur-xl border border-border/50 rounded-xl;
+    box-shadow: 
+      0 4px 30px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* Data card with glow */
+  .data-card {
+    @apply glass-panel p-4 relative overflow-hidden;
+  }
+
+  .data-card::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1), transparent);
+  }
+
+  .data-card:hover::before {
+    @apply opacity-100;
+  }
+
+  /* Metric value styling */
+  .metric-value {
+    @apply font-mono text-2xl font-semibold;
+    text-shadow: var(--glow-cyan);
+  }
+
+  .metric-value-lg {
+    @apply font-mono text-4xl font-bold tracking-tight;
+    text-shadow: var(--glow-cyan);
+  }
+
+  /* Status indicators */
+  .status-indicator {
+    @apply w-2 h-2 rounded-full animate-pulse;
+  }
+
+  .status-healthy {
+    @apply bg-[hsl(var(--success))];
+    box-shadow: var(--glow-green);
+  }
+
+  .status-warning {
+    @apply bg-[hsl(var(--accent))];
+    box-shadow: var(--glow-amber);
+  }
+
+  .status-critical {
+    @apply bg-destructive;
+    box-shadow: 0 0 20px hsl(var(--destructive) / 0.4);
+  }
+
+  /* Tab styling */
+  .nav-tab {
+    @apply px-6 py-3 text-sm font-medium text-muted-foreground transition-all duration-200 relative;
+  }
+
+  .nav-tab.active {
+    @apply text-primary;
+  }
+
+  .nav-tab.active::after {
+    content: '';
+    @apply absolute bottom-0 left-0 right-0 h-0.5 bg-primary;
+    box-shadow: var(--glow-cyan);
+  }
+
+  .nav-tab:hover:not(.active) {
+    @apply text-foreground;
+  }
+
+  /* 3D viewport container */
+  .viewport-container {
+    @apply relative rounded-xl overflow-hidden;
+    background: linear-gradient(180deg, hsl(222 47% 8%) 0%, hsl(222 47% 4%) 100%);
+    box-shadow: inset 0 2px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Chart container */
+  .chart-container {
+    @apply relative;
+  }
+
+  .chart-container::before {
+    content: '';
+    @apply absolute inset-0 pointer-events-none;
+    background: linear-gradient(180deg, transparent 0%, hsl(var(--card)) 100%);
+    opacity: 0.3;
+  }
+
+  /* AI Insight box */
+  .ai-insight {
+    @apply glass-panel p-4 border-l-4 border-l-[hsl(var(--success))];
+    background: linear-gradient(90deg, hsl(var(--success) / 0.1), transparent);
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/20 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+
+  /* Grid pattern overlay */
+  .grid-pattern {
+    background-image: 
+      linear-gradient(hsl(var(--border) / 0.3) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Pulse animation for live data */
+  @keyframes data-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  .live-data {
+    animation: data-pulse 2s ease-in-out infinite;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--data-teal)));
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
