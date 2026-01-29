@@ -26,3 +26,6 @@ ipykernel
 # Visualization (optional but useful)
 matplotlib
 seaborn
+
+
+joblib

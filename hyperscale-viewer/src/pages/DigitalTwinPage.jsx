@@ -1,12 +1,11 @@
 import React, { useRef, useState } from 'react'
-import TwinScene from '../components/TwinScene'
+import GLBViewer from '../components/GLBViewer'
 import TwinTabs from '../components/TwinTabs'
 import DesignPanel from '../components/panels/DesignPanel'
 import SustainabilityPanel from '../components/panels/SustainabilityPanel'
 
 export default function DigitalTwinPage() {
   const [activeTab, setActiveTab] = useState('design')
-  const controlsRef = useRef()
 
   return (
     <div className="app-root">
@@ -17,12 +16,15 @@ export default function DigitalTwinPage() {
       <TwinTabs activeTab={activeTab} onChange={setActiveTab} />
 
       <div className="content">
-        {/* 3D Twin */}
+        {/* ✅ ONLY Canvas in the app */}
         <div className="viewer">
-          <TwinScene activeTab={activeTab} controlsRef={controlsRef} />
+          <GLBViewer
+            glb="/models/server_room.glb"
+            showHTML={activeTab === 'design'}
+          />
         </div>
 
-        {/* Right Context Panel */}
+        {/* Right side panel */}
         <div className="charts">
           {activeTab === 'design' && <DesignPanel />}
           {activeTab === 'sustainability' && <SustainabilityPanel />}

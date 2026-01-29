@@ -1,9 +1,8 @@
-// src/components/GLBViewer.jsx
 import React, { Suspense, useRef, useEffect } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, Environment, useProgress, Html } from '@react-three/drei'
 import Model from './Model'
-import VisibilityChecker from './VisibilityChecker'
+//import VisibilityChecker from './VisibilityChecker'
 
 // Loader UI
 function Loader() {
@@ -178,7 +177,7 @@ export default function GLBViewer({
           controlsRef={controlsRef}
         />
 
-        <VisibilityChecker machineMeshesRef={machineMeshesRef} />
+        {/* <VisibilityChecker machineMeshesRef={machineMeshesRef} /> */}
       </Canvas>
 
       {/* Zoom button */}

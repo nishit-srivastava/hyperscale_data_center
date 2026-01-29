@@ -1,0 +1,84 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+.ven/
+venv/
+svc/
+opcua-venv/
+env/
+
+# Python tooling
+pip-wheel-metadata/
+.eggs/
+*.egg-info/
+.eggs-info/
+
+# =========================
+# VS Code
+# =========================
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# =========================
+# OS / Editor noise
+# =========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+
+# =========================
+# Node-RED
+# =========================
+node-red-data/
+node_red_data/
+*.log
+
+# =========================
+# Docker
+# =========================
+docker-compose.override.yml
+docker/.env
+.env
+
+# Docker runtime artifacts
+**/docker-data/
+**/volumes/
+
+# =========================
+# OPC UA / Certs (later)
+# =========================
+pki/
+certs/
+private/
+trusted/
+rejected/
+
+# =========================
+# Build / Cache
+# =========================
+dist/
+build/
+.cache/
+
+# =========================
+# Test artifacts
+# =========================
+*.out
+*.pid
+*.dump
+
+# =========================
+# IDE / Misc
+# =========================
+.idea/
+*.iml
