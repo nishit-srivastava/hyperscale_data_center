@@ -9,6 +9,33 @@ import { useHoverHighlight } from '../hooks/useHoverHighlight'
 import { useZoomToObject } from '../hooks/useZoomToObject'
 import { useModelInteraction } from '../hooks/useModelInteraction'
 
+
+
+
+const RACK_MAP = {
+  RackA: 'Servers_dup_3',
+  RackB: 'Servers_dup_6',
+  RackC: 'Servers_dup_2', // default focus
+  RackD: 'Servers_dup_5',
+}
+
+const resolveRackFromObject = (mesh) => {
+  let current = mesh
+  while (current) {
+    for (const [rackId, prefix] of Object.entries(RACK_MAP)) {
+      if (current.name?.startsWith(prefix)) {
+        return { rackId, root: current }
+      }
+    }
+    current = current.parent
+  }
+  return null
+}
+
+
+
+
+
 export default function Model({
   glb,
   glbPath,
@@ -50,11 +77,19 @@ export default function Model({
 
   const zoomToObject = useZoomToObject({ scene, camera, controlsRef })
 
+  // useEffect(() => {
+  //   if (onZoomReady && zoomToObject) {
+  //     onZoomReady(zoomToObject)
+  //   }
+  // }, [zoomToObject, onZoomReady])
+
   useEffect(() => {
-    if (onZoomReady && zoomToObject) {
-      onZoomReady(zoomToObject)
-    }
-  }, [zoomToObject, onZoomReady])
+  if (!zoomToObject) return
+
+  // auto-focus Rack C once on load
+  zoomToObject(RACK_MAP.RackC)
+}, [zoomToObject])
+
 
   // ----------------------------------------------------------------------
   // Centering + fit API
@@ -164,18 +199,64 @@ export default function Model({
     }
   }, [scene, camera, controlsRef])
 
+  useEffect(() => {
+  if (!scene) return
+
+  const resetColors = () => {
+    meshesRef.current.forEach((m) => {
+      if (m.material?.color) {
+        m.material.color.set('#aaaaaa')
+      }
+    })
+  }
+
+  window.GLBViewerAPI = window.GLBViewerAPI || {}
+  window.GLBViewerAPI.highlightRack = (rackName) => {
+    resetColors()
+    const rack = meshesRef.current.find((m) => m.name === rackName)
+    if (rack?.material?.color) {
+      rack.material.color.set('orange')
+    }
+  }
+}, [scene])
+
+
   // ----------------------------------------------------------------------
   // Render
   // ----------------------------------------------------------------------
   return (
     <group>
-      <primitive
-        object={scene}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerOut={onPointerOut}
-      />
+ <primitive
+  object={scene}
+  onPointerDown={(e) => {
+    e.stopPropagation()
+
+    const mesh = e.object
+    if (!mesh?.isMesh) return
+
+    const rack = resolveRackFromObject(mesh)
+
+    console.log('🖱 Clicked:', mesh.name)
+    console.log('📦 Rack resolved:', rack?.rackId)
+
+    if (rack) {
+      setModelClick?.({
+        type: 'rack',
+        rackId: rack.rackId,
+        rackRootName: rack.root.name,
+        clickedPart: mesh.name,
+      })
+
+      // optional UX
+      window.GLBViewerAPI?.zoomTo(rack.root.name)
+    }
+  }}
+/>
+
+
+
+
+
 
       {/* Packaging line 1 label */}
       {showHTML && (
