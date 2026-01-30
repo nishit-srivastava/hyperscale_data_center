@@ -1,13 +1,13 @@
-import { useState } from "react";
-import { 
-  RotateCcw, 
-  ZoomIn, 
-  ZoomOut, 
-  Move, 
+import { useEffect, useState } from "react";
+import {
+  RotateCcw,
+  ZoomIn,
+  ZoomOut,
+  Move,
   Maximize2,
-  Box
+  Box,
 } from "lucide-react";
-import { RackVisualization } from "./RackVisualization";
+import GLBViewer from "./GLBViewer";
 
 type DesignView = "telemetry" | "insight" | "anomalies";
 
@@ -18,8 +18,47 @@ interface ViewportPanelProps {
 export const ViewportPanel = ({ designView = "telemetry" }: ViewportPanelProps) => {
   const [isLoading] = useState(false);
 
+  // Lovable → 3D intent mapping
   const highlightedRack = designView === "anomalies" ? "C" : null;
   const shouldZoom = designView === "anomalies";
+
+  // React to designView changes
+ useEffect(() => {
+  if (!highlightedRack) return;
+
+  const rackPrefixMap: Record<string, string> = {
+    A: "Servers_dup_3",
+    B: "Servers_dup_6",
+    C: "Servers_dup_2",
+    D: "Servers_dup_5",
+  };
+
+  const prefix = rackPrefixMap[highlightedRack];
+  if (!prefix) return;
+
+  const tryApply = () => {
+    // const api = window.GLBViewerAPI;
+    // if (!api) return false;
+
+    // api.highlightRack?.(prefix);
+
+    // if (shouldZoom) {
+    //   api.zoomTo?.(prefix);
+    // }
+    return true;
+  };
+
+  // try immediately
+  if (tryApply()) return;
+
+  // retry shortly (GLBViewer mounting)
+  const id = setTimeout(() => {
+    tryApply();
+  }, 200);
+
+  return () => clearTimeout(id);
+}, [highlightedRack, shouldZoom]);
+
 
   return (
     <div className="h-full viewport-container flex flex-col">
@@ -34,8 +73,8 @@ export const ViewportPanel = ({ designView = "telemetry" }: ViewportPanelProps) 
             </span>
           )}
         </div>
-        
-        {/* Viewport Controls */}
+
+        {/* Viewport Controls (UI only for now) */}
         <div className="flex items-center gap-1">
           {[
             { icon: RotateCcw, label: "Reset View" },
@@ -56,17 +95,18 @@ export const ViewportPanel = ({ designView = "telemetry" }: ViewportPanelProps) 
       </div>
 
       {/* 3D Viewport Content */}
-      <div className="flex-1 relative flex items-center justify-center">
+      <div className="flex-1 relative">
         {isLoading ? (
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center justify-center h-full gap-4">
             <div className="w-12 h-12 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             <p className="text-sm text-muted-foreground">Loading 3D Model...</p>
           </div>
         ) : (
           <>
-            <RackVisualization 
-              highlightedRack={highlightedRack} 
-              zoom={shouldZoom}
+            {/* REAL 3D VIEWER */}
+            <GLBViewer
+              glb="/models/server_room.glb"
+              showHTML={true}
             />
 
             {/* Scan Line Effect */}
