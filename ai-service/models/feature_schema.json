@@ -1,0 +1,12 @@
+{
+  "features": [
+    "power_kw",
+    "temp_c",
+    "voltage_v",
+    "current_a",
+    "humidity",
+    "fan_speed",
+    "cpu_util"
+  ],
+  "crac_feature_index": 3
+}
