@@ -21,6 +21,9 @@ export const ViewportPanel = ({ designView = "telemetry" }: ViewportPanelProps) 
   // Lovable → 3D intent mapping
   const highlightedRack = designView === "anomalies" ? "C" : null;
   const shouldZoom = designView === "anomalies";
+  const [selectedRack, setSelectedRack] = useState(null);
+  const anomalyRack = designView === "anomalies" ? "RackC" : null;
+
 
   // React to designView changes
  useEffect(() => {
@@ -32,6 +35,7 @@ export const ViewportPanel = ({ designView = "telemetry" }: ViewportPanelProps) 
     C: "Servers_dup_2",
     D: "Servers_dup_5",
   };
+
 
   const prefix = rackPrefixMap[highlightedRack];
   if (!prefix) return;
@@ -106,6 +110,8 @@ export const ViewportPanel = ({ designView = "telemetry" }: ViewportPanelProps) 
             {/* REAL 3D VIEWER */}
             <GLBViewer
               glb="/models/server_room.glb"
+              selectedRack={selectedRack}
+              anomalyRack={designView === "anomalies" ? "RackC" : null}
               showHTML={true}
             />
 

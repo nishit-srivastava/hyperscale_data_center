@@ -6,6 +6,7 @@ import { Vector3 } from "three";
 //import { useZoomToObject } from "../hooks/useZoomToObject";
 import { useZoomToObject } from "../../hooks/useZoomToObject";
 
+
 const RACK_MAP = {
   RackA: "Servers_dup_3",
   RackB: "Servers_dup_6",
@@ -18,7 +19,7 @@ const resolveRackFromObject = (mesh) => {
   let current = mesh;
   while (current) {
     for (const [rackId, prefix] of Object.entries(RACK_MAP)) {
-      if (current.name?.startsWith(prefix)) {
+      if (current.name && current.name.includes(prefix)) {
         return { rackId, rootName: prefix };
       }
     }
@@ -26,6 +27,7 @@ const resolveRackFromObject = (mesh) => {
   }
   return null;
 };
+
 
 export default function Model({
   glb,
@@ -44,12 +46,13 @@ export default function Model({
   useEffect(() => {
     meshesRef.current = [];
     scene.traverse((o) => o.isMesh && meshesRef.current.push(o));
+    
   }, [scene]);
 
   // zoom helper
   const zoomToObject = useZoomToObject({ scene, camera, controlsRef });
 
-  // expose zoom to GLBViewer
+  //expose zoom to GLBViewer
   useEffect(() => {
     if (onZoomReady && zoomToObject) {
       onZoomReady(zoomToObject);
@@ -59,7 +62,7 @@ export default function Model({
   // default focus → Rack C
   useEffect(() => {
     if (!zoomToObject) return;
-    zoomToObject(RACK_MAP.RackC);
+      zoomToObject(RACK_MAP.RackC);
   }, [zoomToObject]);
 
   // expose highlight API
@@ -76,25 +79,55 @@ export default function Model({
     };
   }, []);
 
+  useEffect(() => {
+  if (!scene) return;
+
+  const rackRegistry = {};
+
+  scene.traverse((obj) => {
+    for (const [rackId, prefix] of Object.entries(RACK_MAP)) {
+      if (obj.name === prefix) {
+        rackRegistry[rackId] = obj;
+      }
+    }
+  });
+
+  window.GLBViewerAPI = window.GLBViewerAPI || {};
+  window.GLBViewerAPI.getRackWorldPosition = (rackId) => {
+    const rack = rackRegistry[rackId];
+    if (!rack) return null;
+
+    const pos = new Vector3();
+    rack.getWorldPosition(pos);
+    return pos;
+  };
+}, [scene]);
+
+
   return (
     <primitive
-      object={scene}
-      onPointerDown={(e) => {
-        e.stopPropagation();
-        const mesh = e.object;
-        if (!mesh?.isMesh) return;
+  object={scene}
+  onPointerDown={(e) => {
+    e.stopPropagation()
 
-        const rack = resolveRackFromObject(mesh);
+    const mesh = e.object
+    if (!mesh.isMesh) return
 
-        if (rack) {
-          setModelClick?.({
-            type: "rack",
-            rackId: rack.rackId,
-          });
+    const rack = resolveRackFromObject(mesh)
 
-          window.GLBViewerAPI?.zoomTo?.(rack.rootName);
-        }
-      }}
-    />
+    console.log("🖱 mesh hit:", mesh.name)
+      console.log("rack:", rack)
+
+    if (rack) {
+      setModelClick?.({
+        type: "rack",
+        rackId: rack.rackId,
+      })
+
+      window.GLBViewerAPI?.zoomTo?.(rack.rootName)
+    }
+  }}
+/>
+
   );
 }
