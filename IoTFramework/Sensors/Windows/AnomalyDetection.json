@@ -1,0 +1,122 @@
+[
+    {
+        "id": "flow_anomaly_tab",
+        "type": "tab",
+        "label": "Anomaly Detection",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "inj_anomaly_c",
+        "type": "inject",
+        "z": "flow_anomaly_tab",
+        "name": "Trigger Anomaly C",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 100,
+        "wires": [
+            [
+                "func_anomaly_c"
+            ]
+        ]
+    },
+    {
+        "id": "func_anomaly_c",
+        "type": "function",
+        "z": "flow_anomaly_tab",
+        "name": "Build Anomaly Payload",
+        "func": "// Define raw values (1 item per attribute)\n// The backend will detect raw values (>1.0) and apply scalers\nconst cpu_util_val = 99.0;\nconst power_kw_val = 2.5;\nconst ambient_temp_c_val = 35.0;\nconst inlet_temp_c_val = 45.0;\nconst exhaust_temp_c_val = 65.0;\nconst fan_speed_rpm_val = 1500.0;\nconst humidity_val = 40.0;\n\nconst count = 1;\n\nconst payload = {\n  rack_id: \"RackC\",\n  workload_type: \"ai_inference\",\n  cpu_util: cpu_util_val,\n  power_kw: power_kw_val,\n  ambient_temp_c: ambient_temp_c_val,\n inlet_temp_c: inlet_temp_c_val,\n  exhaust_temp_c: exhaust_temp_c_val,\n  fan_speed_rpm: fan_speed_rpm_val,\n  humidity: humidity_val\n};\nmsg.payload = payload;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 100,
+        "wires": [
+            [
+                "mqtt_out_anomaly_c",
+                "debug_anomaly_c"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_anomaly_c",
+        "type": "mqtt out",
+        "z": "flow_anomaly_tab",
+        "name": "Pub Anomaly C",
+        "topic": "v1/devices/me/telemetry",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "broker_rack_c_anomaly",
+        "x": 550,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "debug_anomaly_c",
+        "type": "debug",
+        "z": "flow_anomaly_tab",
+        "name": "Anomaly Response",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 750,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "broker_rack_c_anomaly",
+        "type": "mqtt-broker",
+        "name": "Rack C Broker",
+        "broker": "172.23.106.87",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "5",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
