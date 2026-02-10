@@ -75,6 +75,10 @@ const calculateStatus = (key: string, value: any): Metric["status"] => {
       if (num > 95) return "critical";
       if (num > 85) return "warning";
       return "healthy";
+    case "humidity":
+      if (num > 80 || num < 20) return "critical";
+      if (num > 70 || num < 30) return "warning";
+      return "healthy";
     default:
       return "healthy";
   }
@@ -94,6 +98,7 @@ async function getUbuntuToken(username: string, password: string): Promise<strin
 export const MetricsPanel = () => {
   const [token, setToken] = useState<string | null>(null);
   const [latestTelemetry, setLatestTelemetry] = useState<Record<string, { value: any; ts: number }>>({});
+  const [selectedRack, setSelectedRack] = useState(racks_parameters.find(r => r.name === "Rack C") || racks_parameters[0]);
   const wsRef = useRef<WebSocket | null>(null);
 
   // 1. Fetch Token
@@ -118,14 +123,13 @@ export const MetricsPanel = () => {
 
     ws.onopen = () => {
       console.log("✅ WebSocket Connected");
-      const entityIds = racks_parameters.map(p => p.id);
       const subscribeCmd = {
-        tsSubCmds: entityIds.map(id => ({
+        tsSubCmds: [{
           entityType: "DEVICE",
-          entityId: id,
+          entityId: selectedRack.id,
           scope: "LATEST_TELEMETRY",
           cmdId: Math.floor(Math.random() * 1000),
-        })),
+        }],
         historyCmds: [],
         attrSubCmds: [],
       };
@@ -151,18 +155,19 @@ export const MetricsPanel = () => {
 
     ws.onerror = (e) => console.error("❌ WebSocket error", e);
     return () => ws.close();
-  }, [token]);
+  }, [token, selectedRack]);
 
   // 3. Map Telemetry to Metrics
   const metrics = useMemo(() => {
     return METRIC_DEFS.map((def) => {
       const telemetry = latestTelemetry[def.key];
-      const rawValue = def.key === "rack_id" ? "RackC" : telemetry?.value;
+      const rawValue = def.key === "rack_id" ? selectedRack.name : telemetry?.value;
       const timestamp = telemetry?.ts ? new Date(telemetry.ts).toLocaleString() : new Date().toLocaleString();
       
       let displayValue = rawValue ?? "-";
-      if (typeof rawValue === 'number') {
-        displayValue = def.unit === "RPM" ? Math.round(rawValue).toString() : rawValue.toFixed(def.unit ? 1 : 2);
+      const numValue = Number(rawValue);
+      if (!isNaN(numValue) && rawValue !== null && rawValue !== undefined && rawValue !== "" && def.key !== "rack_id" && def.key !== "workload_type") {
+        displayValue = def.unit === "RPM" ? Math.round(numValue).toString() : numValue.toFixed(2);
       }
 
       return {
@@ -172,7 +177,7 @@ export const MetricsPanel = () => {
         timestamp,
       };
     });
-  }, [latestTelemetry]);
+  }, [latestTelemetry, selectedRack]);
 
   return (
     <div className="space-y-4">
@@ -183,6 +188,26 @@ export const MetricsPanel = () => {
         <span className="text-xs font-mono text-muted-foreground">
           Last updated: {new Date().toLocaleTimeString()}
         </span>
+      </div>
+
+      {/* Rack Selector */}
+      <div className="flex gap-2 p-1 bg-muted/30 rounded-lg overflow-x-auto">
+        {racks_parameters.map((rack) => (
+          <button
+            key={rack.name}
+            onClick={() => {
+              setSelectedRack(rack);
+              setLatestTelemetry({}); // Clear previous telemetry
+            }}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
+              selectedRack.name === rack.name
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            }`}
+          >
+            {rack.name}
+          </button>
+        ))}
       </div>
 
       <div className="space-y-2">
