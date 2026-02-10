@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from services.forecast import short_term_insight, load_artifacts
 from schemas.forecast import ShortTermInsightRequest, ShortTermInsightResponse
 
@@ -13,7 +14,13 @@ import services.patchtst_loader as patchtst_loader
 from schemas.energy import EnergyForecastRequest, EnergyForecastResponse
 
 app = FastAPI(title="AI Digital Twin Inference API")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=".*",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def startup_event():

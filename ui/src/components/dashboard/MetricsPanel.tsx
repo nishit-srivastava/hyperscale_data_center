@@ -7,7 +7,8 @@ import {
   Droplets, 
   Zap,
   Server,
-  Activity
+  Activity,
+  AlertTriangle
 } from "lucide-react";
 import { racks_parameters } from "../../constants/racks_parameters";
 import { userName, password } from "../../constants/creds";
@@ -20,6 +21,15 @@ interface Metric {
   icon: React.ElementType;
   status: "healthy" | "warning" | "critical";
   timestamp: string;
+}
+
+interface AnomalyResponse {
+  rackId: string;
+  status: "ANOMALY" | "NORMAL";
+  confidence: number;
+  reconstructionError: number;
+  threshold: number;
+  message: string;
 }
 
 const WS_URL = "ws://172.23.106.87:8080/api/ws/plugins/telemetry";
@@ -98,6 +108,7 @@ async function getUbuntuToken(username: string, password: string): Promise<strin
 export const MetricsPanel = () => {
   const [token, setToken] = useState<string | null>(null);
   const [latestTelemetry, setLatestTelemetry] = useState<Record<string, { value: any; ts: number }>>({});
+  const [anomalyData, setAnomalyData] = useState<AnomalyResponse | null>(null);
   const [selectedRack, setSelectedRack] = useState(racks_parameters.find(r => r.name === "Rack C") || racks_parameters[0]);
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -157,6 +168,53 @@ export const MetricsPanel = () => {
     return () => ws.close();
   }, [token, selectedRack]);
 
+  // 3. Anomaly Detection
+  useEffect(() => {
+    if (Object.keys(latestTelemetry).length === 0) return;
+
+    const checkAnomaly = async () => {
+      const metricsToMonitor = [
+        "cpu_util", "power_kw", "ambient_temp_c", 
+        "inlet_temp_c", "exhaust_temp_c", "fan_speed_rpm", "humidity"
+      ];
+
+      const metricsData: Record<string, number[]> = {};
+      let hasAllMetrics = true;
+
+      for (const key of metricsToMonitor) {
+        const val = latestTelemetry[key]?.value;
+        if (val === undefined) {
+          hasAllMetrics = false;
+          break;
+        }
+        const numVal = Number(val);
+        metricsData[key] = Array(30).fill(isNaN(numVal) ? 0 : numVal);
+      }
+
+      if (!hasAllMetrics) return;
+
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/ai/insight/anomaly', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rackId: selectedRack.name.replace(/\s+/g, ''),
+            metrics: metricsData
+          })
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setAnomalyData(data);
+        }
+      } catch (e) {
+        console.error("Anomaly check failed", e);
+      }
+    };
+
+    checkAnomaly();
+  }, [latestTelemetry, selectedRack]);
+
   // 3. Map Telemetry to Metrics
   const metrics = useMemo(() => {
     return METRIC_DEFS.map((def) => {
@@ -189,6 +247,17 @@ export const MetricsPanel = () => {
           Last updated: {new Date().toLocaleTimeString()}
         </span>
       </div>
+
+      {/* Anomaly Alert */}
+      {anomalyData?.status === "ANOMALY" && (
+        <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-center gap-3 animate-pulse">
+          <AlertTriangle className="w-5 h-5 text-destructive" />
+          <div>
+            <p className="text-sm font-semibold text-destructive">Anomaly Detected</p>
+            <p className="text-xs text-muted-foreground">{anomalyData.message} (Confidence: {(anomalyData.confidence * 100).toFixed(0)}%)</p>
+          </div>
+        </div>
+      )}
 
       {/* Rack Selector */}
       <div className="flex gap-2 p-1 bg-muted/30 rounded-lg overflow-x-auto">

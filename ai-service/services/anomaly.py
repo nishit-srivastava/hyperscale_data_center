@@ -2,6 +2,7 @@
 import joblib
 import numpy as np
 from tensorflow.keras.models import load_model
+from fastapi import HTTPException
 
 autoencoder = None
 threshold = None
@@ -34,18 +35,15 @@ def detect_anomaly(payload: dict):
     metrics = payload["metrics"]
 
     # 1. Build the matrix in the CORRECT ORDER
-    raw_values = []
-    for i in range(WINDOW):
-        # This ensures column 0 is always cpu_util, etc.
-        timestep = [metrics[f][i] for f in FEATURES]
-        raw_values.append(timestep)
-    
-    X_raw = np.array(raw_values) # Shape: (30, 7)
+    # Transpose (Features, Time) -> (Time, Features) to match model input shape (30, 7)
+    X_raw = np.array([metrics[f] for f in FEATURES]).T
 
     # 2. Apply the RACK-SPECIFIC scaler
     # If the curl data is already 0-1 (scaled), SKIP this step.
     # If the curl data is raw (e.g. RPM = 2100), KEEP this step.
     if np.max(X_raw) > 1.0:
+        if rack not in scalers:
+            raise HTTPException(status_code=404, detail=f"Scaler for rack '{rack}' not found.")
         scaler = scalers[rack] # Loaded from your .pkl
         X_scaled = scaler.transform(X_raw)
     else:
