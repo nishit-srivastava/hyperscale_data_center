@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useRef, useState } from "react";
 import { 
   Thermometer, 
   Cpu, 
@@ -8,6 +9,8 @@ import {
   Server,
   Activity
 } from "lucide-react";
+import { racks_parameters } from "../../constants/racks_parameters";
+import { userName, password } from "../../constants/creds";
 
 interface Metric {
   id: string;
@@ -19,88 +22,18 @@ interface Metric {
   timestamp: string;
 }
 
-const metrics: Metric[] = [
-  {
-    id: "1",
-    label: "Rack ID",
-    value: "RackC",
-    unit: "",
-    icon: Server,
-    status: "healthy",
-    timestamp: "1/6/2026, 6:48:01 PM",
-  },
-  {
-    id: "2",
-    label: "Active Workload Type",
-    value: "ai_inference",
-    unit: "",
-    icon: Activity,
-    status: "healthy",
-    timestamp: "1/6/2026, 6:48:01 PM",
-  },
-  {
-    id: "3",
-    label: "Ambient Room Temperature",
-    value: "25.4",
-    unit: "°C",
-    icon: Thermometer,
-    status: "healthy",
-    timestamp: "1/6/2026, 6:48:01 PM",
-  },
-  {
-    id: "4",
-    label: "Compute Utilization",
-    value: "72.0",
-    unit: "%",
-    icon: Cpu,
-    status: "healthy",
-    timestamp: "1/6/2026, 6:48:01 PM",
-  },
-  {
-    id: "5",
-    label: "Exhaust Air Temperature",
-    value: "43.0",
-    unit: "°C",
-    icon: Wind,
-    status: "warning",
-    timestamp: "1/6/2026, 6:48:01 PM",
-  },
-  {
-    id: "6",
-    label: "Cooling Fan Speed",
-    value: "6081",
-    unit: "RPM",
-    icon: Fan,
-    status: "healthy",
-    timestamp: "1/6/2026, 6:48:01 PM",
-  },
-  {
-    id: "7",
-    label: "Relative Humidity",
-    value: "42.2",
-    unit: "%",
-    icon: Droplets,
-    status: "healthy",
-    timestamp: "1/6/2026, 6:48:01 PM",
-  },
-  {
-    id: "8",
-    label: "Inlet Air Temperature",
-    value: "31.2",
-    unit: "°C",
-    icon: Thermometer,
-    status: "healthy",
-    timestamp: "1/6/2026, 6:48:01 PM",
-  },
-  {
-    id: "9",
-    label: "IT Power Consumption",
-    value: "3.24",
-    unit: "kW",
-    icon: Zap,
-    status: "healthy",
-    timestamp: "1/6/2026, 6:48:01 PM",
-  },
+const WS_URL = "ws://172.23.106.87:8080/api/ws/plugins/telemetry";
+
+const METRIC_DEFS = [
+  { id: "1", label: "Rack ID", key: "rack_id", unit: "", icon: Server },
+  { id: "2", label: "Active Workload Type", key: "workload_type", unit: "", icon: Activity },
+  { id: "3", label: "Ambient Room Temperature", key: "ambient_temp_c", unit: "°C", icon: Thermometer },
+  { id: "4", label: "Compute Utilization", key: "cpu_util", unit: "%", icon: Cpu },
+  { id: "5", label: "Exhaust Air Temperature", key: "exhaust_temp_c", unit: "°C", icon: Wind },
+  { id: "6", label: "Cooling Fan Speed", key: "fan_speed_rpm", unit: "RPM", icon: Fan },
+  { id: "7", label: "Relative Humidity", key: "humidity", unit: "%", icon: Droplets },
+  { id: "8", label: "Inlet Air Temperature", key: "inlet_temp_c", unit: "°C", icon: Thermometer },
+  { id: "9", label: "IT Power Consumption", key: "power_kw", unit: "kW", icon: Zap },
 ];
 
 const getStatusColor = (status: Metric["status"]) => {
@@ -125,7 +58,122 @@ const getStatusBg = (status: Metric["status"]) => {
   }
 };
 
+const calculateStatus = (key: string, value: any): Metric["status"] => {
+  const num = Number(value);
+  if (isNaN(num)) return "healthy";
+
+  switch (key) {
+    case "inlet_temp_c":
+      if (num > 40) return "critical";
+      if (num > 35) return "warning";
+      return "healthy";
+    case "exhaust_temp_c":
+      if (num > 60) return "critical";
+      if (num > 50) return "warning";
+      return "healthy";
+    case "cpu_util":
+      if (num > 95) return "critical";
+      if (num > 85) return "warning";
+      return "healthy";
+    default:
+      return "healthy";
+  }
+};
+
+async function getUbuntuToken(username: string, password: string): Promise<string> {
+  const res = await fetch("http://172.23.106.87:8080/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!res.ok) throw new Error("Failed to fetch token");
+  const data = await res.json();
+  return data.token;
+}
+
 export const MetricsPanel = () => {
+  const [token, setToken] = useState<string | null>(null);
+  const [latestTelemetry, setLatestTelemetry] = useState<Record<string, { value: any; ts: number }>>({});
+  const wsRef = useRef<WebSocket | null>(null);
+
+  // 1. Fetch Token
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const t = await getUbuntuToken(userName, password);
+        setToken(t);
+      } catch (e) {
+        console.error("❌ Token fetch failed", e);
+      }
+    };
+    fetchToken();
+  }, []);
+
+  // 2. WebSocket Connection
+  useEffect(() => {
+    if (!token) return;
+
+    const ws = new WebSocket(`${WS_URL}?token=${token}`);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log("✅ WebSocket Connected");
+      const entityIds = racks_parameters.map(p => p.id);
+      const subscribeCmd = {
+        tsSubCmds: entityIds.map(id => ({
+          entityType: "DEVICE",
+          entityId: id,
+          scope: "LATEST_TELEMETRY",
+          cmdId: Math.floor(Math.random() * 1000),
+        })),
+        historyCmds: [],
+        attrSubCmds: [],
+      };
+      ws.send(JSON.stringify(subscribeCmd));
+    };
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      const data = msg?.data;
+      if (!data || typeof data !== "object") return;
+
+      const parsed: Record<string, { value: any; ts: number }> = {};
+      Object.entries(data).forEach(([key, arr]: [string, any]) => {
+        if (!Array.isArray(arr) || arr.length === 0) return;
+        const [ts, value] = arr[0];
+        parsed[key] = { value, ts };
+      });
+
+      if (Object.keys(parsed).length > 0) {
+        setLatestTelemetry(prev => ({ ...prev, ...parsed }));
+      }
+    };
+
+    ws.onerror = (e) => console.error("❌ WebSocket error", e);
+    return () => ws.close();
+  }, [token]);
+
+  // 3. Map Telemetry to Metrics
+  const metrics = useMemo(() => {
+    return METRIC_DEFS.map((def) => {
+      const telemetry = latestTelemetry[def.key];
+      const rawValue = def.key === "rack_id" ? "RackC" : telemetry?.value;
+      const timestamp = telemetry?.ts ? new Date(telemetry.ts).toLocaleString() : new Date().toLocaleString();
+      
+      let displayValue = rawValue ?? "-";
+      if (typeof rawValue === 'number') {
+        displayValue = def.unit === "RPM" ? Math.round(rawValue).toString() : rawValue.toFixed(def.unit ? 1 : 2);
+      }
+
+      return {
+        ...def,
+        value: String(displayValue),
+        status: calculateStatus(def.key, rawValue),
+        timestamp,
+      };
+    });
+  }, [latestTelemetry]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -133,7 +181,7 @@ export const MetricsPanel = () => {
           Live Operational State
         </h2>
         <span className="text-xs font-mono text-muted-foreground">
-          Last updated: 6:48:01 PM
+          Last updated: {new Date().toLocaleTimeString()}
         </span>
       </div>
 

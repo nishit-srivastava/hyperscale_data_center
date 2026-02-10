@@ -1,0 +1,385 @@
+[
+    {
+        "id": "575fdaa7ae261d7b",
+        "type": "tab",
+        "label": "Windows Racks Combined",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "64bf6bbda2013a58",
+        "type": "inject",
+        "z": "575fdaa7ae261d7b",
+        "name": "Rack A Trigger",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 100,
+        "wires": [
+            [
+                "5fddc1c61a39af33"
+            ]
+        ]
+    },
+    {
+        "id": "5fddc1c61a39af33",
+        "type": "function",
+        "z": "575fdaa7ae261d7b",
+        "name": "RackA Telemetry",
+        "func": "let cpuLoad = Math.min(100, Math.max(0, 30 + Math.random() * 50));\nlet ambient = 25 + Math.random();\nlet inlet = ambient + cpuLoad * 0.05;\nlet exhaust = inlet + 5 + Math.random();\nconst payload = {\n  rack_id: \"RackA\",\n  cpu_util: Number(cpuLoad.toFixed(2)),\n  power_kw: Number((0.5 + cpuLoad * 0.01).toFixed(2)),\n  ambient_temp_c: Number(ambient.toFixed(2)),\n  inlet_temp_c: Number(inlet.toFixed(2)),\n  exhaust_temp_c: Number(exhaust.toFixed(2)),\n  fan_speed_rpm: Math.round(2000 + cpuLoad * 30),\n  humidity: Number((45 + Math.random() * 5).toFixed(2))\n};\nmsg.payload = payload;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 100,
+        "wires": [
+            [
+                "2bac0bf70a638e02"
+            ]
+        ]
+    },
+    {
+        "id": "2bac0bf70a638e02",
+        "type": "mqtt out",
+        "z": "575fdaa7ae261d7b",
+        "name": "Pub A",
+        "topic": "v1/devices/me/telemetry",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "broker_a",
+        "x": 550,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "20ee13e27e64b804",
+        "type": "inject",
+        "z": "575fdaa7ae261d7b",
+        "name": "Rack B Trigger",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 200,
+        "wires": [
+            [
+                "cc6c537da3853c22"
+            ]
+        ]
+    },
+    {
+        "id": "cc6c537da3853c22",
+        "type": "function",
+        "z": "575fdaa7ae261d7b",
+        "name": "Telemetry B",
+        "func": "msg.payload = {\n    temperature: 20 + Math.random() * 5,\n    humidity: 50 + Math.random() * 10,\n    rack: 'B'\n};\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 200,
+        "wires": [
+            [
+                "f9457a7e2f5480e8"
+            ]
+        ]
+    },
+    {
+        "id": "f9457a7e2f5480e8",
+        "type": "mqtt out",
+        "z": "575fdaa7ae261d7b",
+        "name": "Pub B",
+        "topic": "v1/devices/me/telemetry",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "broker_b",
+        "x": 550,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "a08cf5f4e6e9398e",
+        "type": "inject",
+        "z": "575fdaa7ae261d7b",
+        "name": "Rack C Trigger",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 300,
+        "wires": [
+            [
+                "2454a2acce12b203"
+            ]
+        ]
+    },
+    {
+        "id": "2454a2acce12b203",
+        "type": "function",
+        "z": "575fdaa7ae261d7b",
+        "name": "RackC Telemetry",
+        "func": "let cpuLoad = Math.min(100, 70 + Math.random() * 25);\nlet ambient = 25 + Math.random() * 1.5;\nlet inlet = ambient + cpuLoad * 0.08;\nlet exhaust = inlet + 10 + Math.random() * 3;\nconst payload = {\n  rack_id: \"RackC\",\n  workload_type: \"ai_inference\",\n  cpu_util: Number(cpuLoad.toFixed(2)),\n  power_kw: Number((1.8 + cpuLoad * 0.02).toFixed(2)),\n  ambient_temp_c: Number(ambient.toFixed(2)),\n  inlet_temp_c: Number(inlet.toFixed(2)),\n  exhaust_temp_c: Number(exhaust.toFixed(2)),\n  fan_speed_rpm: Math.round(3200 + cpuLoad * 40),\n  humidity: Number((42 + Math.random() * 5).toFixed(2))\n};\nmsg.payload = payload;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 300,
+        "wires": [
+            [
+                "727e6a963d012e03"
+            ]
+        ]
+    },
+    {
+        "id": "727e6a963d012e03",
+        "type": "mqtt out",
+        "z": "575fdaa7ae261d7b",
+        "name": "Pub C",
+        "topic": "v1/devices/me/telemetry",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "broker_c",
+        "x": 550,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "482df842aaf0a854",
+        "type": "inject",
+        "z": "575fdaa7ae261d7b",
+        "name": "Rack D Trigger",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 400,
+        "wires": [
+            [
+                "24a8050ba6c62481"
+            ]
+        ]
+    },
+    {
+        "id": "24a8050ba6c62481",
+        "type": "function",
+        "z": "575fdaa7ae261d7b",
+        "name": "Telemetry D",
+        "func": "msg.payload = {\n    temperature: 20 + Math.random() * 5,\n    humidity: 50 + Math.random() * 10,\n    rack: 'D'\n};\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 400,
+        "wires": [
+            [
+                "27c13d0544408814"
+            ]
+        ]
+    },
+    {
+        "id": "27c13d0544408814",
+        "type": "mqtt out",
+        "z": "575fdaa7ae261d7b",
+        "name": "Pub D",
+        "topic": "v1/devices/me/telemetry",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "broker_d",
+        "x": 550,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "broker_a",
+        "type": "mqtt-broker",
+        "name": "Rack A Broker",
+        "broker": "172.23.106.87",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "5",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "broker_b",
+        "type": "mqtt-broker",
+        "name": "Rack B Broker",
+        "broker": "172.23.106.87",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "5",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "broker_c",
+        "type": "mqtt-broker",
+        "name": "Rack C Broker",
+        "broker": "172.23.106.87",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "5",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "broker_d",
+        "type": "mqtt-broker",
+        "name": "Rack D Broker",
+        "broker": "172.23.106.87",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "5",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]

@@ -1,0 +1,98 @@
+[
+    {
+        "id": "53fd0ed44dc930d4",
+        "type": "tab",
+        "label": "RackC Telemetry (MQTT Out)",
+        "disabled": false
+    },
+    {
+        "id": "4bf608764b2a43c5",
+        "type": "inject",
+        "z": "53fd0ed44dc930d4",
+        "name": "Every 10 seconds",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 140,
+        "y": 140,
+        "wires": [
+            [
+                "1693e2f64814bbd9"
+            ]
+        ]
+    },
+    {
+        "id": "1693e2f64814bbd9",
+        "type": "function",
+        "z": "53fd0ed44dc930d4",
+        "name": "RackC – AI / GPU Load",
+        "func": "// Rack C – AI inference / training workload\n\nlet cpuLoad = Math.min(100, 70 + Math.random() * 25); // 70–95%\nlet ambient = 25 + Math.random() * 1.5;\nlet inlet = ambient + cpuLoad * 0.08;\nlet exhaust = inlet + 10 + Math.random() * 3;\n\nconst payload = {\n  rack_id: \"RackC\",\n  workload_type: \"ai_inference\",\n  cpu_util: Number(cpuLoad.toFixed(2)),\n  power_kw: Number((1.8 + cpuLoad * 0.02).toFixed(2)),\n  ambient_temp_c: Number(ambient.toFixed(2)),\n  inlet_temp_c: Number(inlet.toFixed(2)),\n  exhaust_temp_c: Number(exhaust.toFixed(2)),\n  fan_speed_rpm: Math.round(3200 + cpuLoad * 40),\n  humidity: Number((42 + Math.random() * 5).toFixed(2))\n};\n\nmsg.payload = payload;\nreturn msg;",
+        "outputs": 1,
+        "x": 430,
+        "y": 140,
+        "wires": [
+            [
+                "b219bfa82530e5ae"
+            ]
+        ]
+    },
+    {
+        "id": "b219bfa82530e5ae",
+        "type": "mqtt out",
+        "z": "53fd0ed44dc930d4",
+        "name": "Pub Rack C",
+        "topic": "v1/devices/me/telemetry",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "1e55c3cb27a7185d",
+        "x": 720,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "1e55c3cb27a7185d",
+        "type": "mqtt-broker",
+        "name": "Rack C Broker",
+        "broker": "172.23.106.87",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "5",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
