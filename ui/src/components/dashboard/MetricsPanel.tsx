@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { 
   Thermometer, 
   Cpu, 
@@ -11,7 +11,6 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { racks_parameters } from "../../constants/racks_parameters";
-import { userName, password } from "../../constants/creds";
 
 interface Metric {
   id: string;
@@ -23,7 +22,7 @@ interface Metric {
   timestamp: string;
 }
 
-interface AnomalyResponse {
+export interface AnomalyResponse {
   rackId: string;
   status: "ANOMALY" | "NORMAL";
   confidence: number;
@@ -31,8 +30,6 @@ interface AnomalyResponse {
   threshold: number;
   message: string;
 }
-
-const WS_URL = "ws://172.23.106.87:8080/api/ws/plugins/telemetry";
 
 const METRIC_DEFS = [
   { id: "1", label: "Rack ID", key: "rack_id", unit: "", icon: Server },
@@ -94,127 +91,14 @@ const calculateStatus = (key: string, value: any): Metric["status"] => {
   }
 };
 
-async function getUbuntuToken(username: string, password: string): Promise<string> {
-  const res = await fetch("http://172.23.106.87:8080/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
-  });
-  if (!res.ok) throw new Error("Failed to fetch token");
-  const data = await res.json();
-  return data.token;
+interface MetricsPanelProps {
+  latestTelemetry: Record<string, { value: any; ts: number }>;
+  selectedRack: typeof racks_parameters[0];
+  onRackSelect: (rack: typeof racks_parameters[0]) => void;
+  anomalyData: AnomalyResponse | null;
 }
 
-export const MetricsPanel = () => {
-  const [token, setToken] = useState<string | null>(null);
-  const [latestTelemetry, setLatestTelemetry] = useState<Record<string, { value: any; ts: number }>>({});
-  const [anomalyData, setAnomalyData] = useState<AnomalyResponse | null>(null);
-  const [selectedRack, setSelectedRack] = useState(racks_parameters.find(r => r.name === "Rack C") || racks_parameters[0]);
-  const wsRef = useRef<WebSocket | null>(null);
-
-  // 1. Fetch Token
-  useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        const t = await getUbuntuToken(userName, password);
-        setToken(t);
-      } catch (e) {
-        console.error("❌ Token fetch failed", e);
-      }
-    };
-    fetchToken();
-  }, []);
-
-  // 2. WebSocket Connection
-  useEffect(() => {
-    if (!token) return;
-
-    const ws = new WebSocket(`${WS_URL}?token=${token}`);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      console.log("✅ WebSocket Connected");
-      const subscribeCmd = {
-        tsSubCmds: [{
-          entityType: "DEVICE",
-          entityId: selectedRack.id,
-          scope: "LATEST_TELEMETRY",
-          cmdId: Math.floor(Math.random() * 1000),
-        }],
-        historyCmds: [],
-        attrSubCmds: [],
-      };
-      ws.send(JSON.stringify(subscribeCmd));
-    };
-
-    ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      const data = msg?.data;
-      if (!data || typeof data !== "object") return;
-
-      const parsed: Record<string, { value: any; ts: number }> = {};
-      Object.entries(data).forEach(([key, arr]: [string, any]) => {
-        if (!Array.isArray(arr) || arr.length === 0) return;
-        const [ts, value] = arr[0];
-        parsed[key] = { value, ts };
-      });
-
-      if (Object.keys(parsed).length > 0) {
-        setLatestTelemetry(prev => ({ ...prev, ...parsed }));
-      }
-    };
-
-    ws.onerror = (e) => console.error("❌ WebSocket error", e);
-    return () => ws.close();
-  }, [token, selectedRack]);
-
-  // 3. Anomaly Detection
-  useEffect(() => {
-    if (Object.keys(latestTelemetry).length === 0) return;
-
-    const checkAnomaly = async () => {
-      const metricsToMonitor = [
-        "cpu_util", "power_kw", "ambient_temp_c", 
-        "inlet_temp_c", "exhaust_temp_c", "fan_speed_rpm", "humidity"
-      ];
-
-      const metricsData: Record<string, number[]> = {};
-      let hasAllMetrics = true;
-
-      for (const key of metricsToMonitor) {
-        const val = latestTelemetry[key]?.value;
-        if (val === undefined) {
-          hasAllMetrics = false;
-          break;
-        }
-        const numVal = Number(val);
-        metricsData[key] = Array(30).fill(isNaN(numVal) ? 0 : numVal);
-      }
-
-      if (!hasAllMetrics) return;
-
-      try {
-        const res = await fetch('http://127.0.0.1:8000/api/ai/insight/anomaly', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            rackId: selectedRack.name.replace(/\s+/g, ''),
-            metrics: metricsData
-          })
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          setAnomalyData(data);
-        }
-      } catch (e) {
-        console.error("Anomaly check failed", e);
-      }
-    };
-
-    checkAnomaly();
-  }, [latestTelemetry, selectedRack]);
-
+export const MetricsPanel = ({ latestTelemetry, selectedRack, onRackSelect, anomalyData }: MetricsPanelProps) => {
   // 3. Map Telemetry to Metrics
   const metrics = useMemo(() => {
     return METRIC_DEFS.map((def) => {
@@ -264,10 +148,7 @@ export const MetricsPanel = () => {
         {racks_parameters.map((rack) => (
           <button
             key={rack.name}
-            onClick={() => {
-              setSelectedRack(rack);
-              setLatestTelemetry({}); // Clear previous telemetry
-            }}
+            onClick={() => onRackSelect(rack)}
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
               selectedRack.name === rack.name
                 ? "bg-primary text-primary-foreground shadow-sm"

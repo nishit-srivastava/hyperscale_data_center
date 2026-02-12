@@ -32,9 +32,9 @@ def short_term_insight(payload):
     status = "NOMINAL" if deviation < 1.2 else "WATCH"
 
     message = (
-        "Rack is operating within nominal limits"
+        "Current thermal and power behavior is within nominal operating limits. System efficiency optimal"
         if status == "NOMINAL"
-        else "Rack behavior slightly deviates from expected pattern"
+        else "Rack behavior deviates from expected pattern"
     )
 
     return {
