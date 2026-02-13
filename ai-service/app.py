@@ -13,6 +13,9 @@ from services.patchtst_loader import patchtst_model
 import services.patchtst_loader as patchtst_loader
 from schemas.energy import EnergyForecastRequest, EnergyForecastResponse
 
+from services.risk import calculate_yearly_risk
+from schemas.risk import RiskRequest, RiskResponse
+
 app = FastAPI(title="AI Digital Twin Inference API")
 app.add_middleware(
     CORSMiddleware,
@@ -53,9 +56,9 @@ def energy_forecast_api(payload: EnergyForecastRequest):
     )
 
 
-# @app.post("/api/ai/sustainability/risk")
-# def sustainability(payload: dict):
-#     return yearly_risk(payload)
+@app.post("/api/ai/sustainability/risk", response_model=RiskResponse)
+def sustainability(payload: RiskRequest):
+    return calculate_yearly_risk(payload.dict())
 
 # @app.post("/api/ai/sustainability/scenario")
 # def scenario(payload: dict):

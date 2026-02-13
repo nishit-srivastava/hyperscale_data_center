@@ -268,7 +268,7 @@ const Index = () => {
           ) : (
             /* Sustainability Tab Content */
             <div className="flex-1 overflow-y-auto p-4">
-              <FutureOutlook />
+              <FutureOutlook latestTelemetry={latestTelemetry} />
             </div>
           )}
         </div>
