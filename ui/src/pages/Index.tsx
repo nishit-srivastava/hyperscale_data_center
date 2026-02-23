@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { MetricsPanel, AnomalyResponse } from "@/components/dashboard/MetricsPanel";
 import { ViewportPanel } from "@/components/dashboard/ViewportPanel";
-import { ChartsPanel, ChartDataPoint } from "@/components/dashboard/ChartsPanel";
+import { ChartDataPoint } from "@/components/dashboard/ChartsPanel";
 import { AIInsight } from "@/components/dashboard/AIInsight";
 import { DesignSubNav, type DesignView } from "@/components/dashboard/DesignSubNav";
 import { FutureOutlook } from "@/components/dashboard/FutureOutlook";
@@ -138,6 +138,11 @@ const Index = () => {
   useEffect(() => {
     if (Object.keys(latestTelemetry).length === 0) return;
 
+    if (selectedRack.name !== "Rack C") {
+      setAnomalyData(null);
+      return;
+    }
+
     const checkAnomaly = async () => {
       const metricsToMonitor = [
         "cpu_util", "power_kw", "ambient_temp_c", 
@@ -234,36 +239,45 @@ const Index = () => {
               {/* Anomaly Alert - Show when in anomalies view */}
               {designView === "anomalies" && (
                 <div className="p-4 border-t border-border/50">
-                  <div className="ai-insight border-l-destructive" style={{ background: 'linear-gradient(90deg, hsl(var(--destructive) / 0.1), transparent)' }}>
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-destructive/20 flex items-center justify-center flex-shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-destructive" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                          <path d="M12 9v4"/>
-                          <path d="M12 17h.01"/>
+                  {anomalyData?.status === "ANOMALY" ? (
+                    <div className="ai-insight border-l-destructive" style={{ background: 'linear-gradient(90deg, hsl(var(--destructive) / 0.1), transparent)' }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-destructive/20 flex items-center justify-center flex-shrink-0">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-destructive" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                            <path d="M12 9v4"/>
+                            <path d="M12 17h.01"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-destructive">
+                              Anomaly Detected
+                            </span>
+                            <span className="text-xs text-muted-foreground font-mono">• {selectedRack.name}</span>
+                          </div>
+                          <p className="text-sm text-foreground/90 leading-relaxed">
+                            {selectedRack.name}: {anomalyData.message}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-lg bg-muted/30 border border-border flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 6 9 17l-5-5"/>
                         </svg>
                       </div>
                       <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-semibold uppercase tracking-wider text-destructive">
-                            Anomaly Detected
-                          </span>
-                          <span className="text-xs text-muted-foreground font-mono">• Rack C</span>
-                        </div>
-                        <p className="text-sm text-foreground/90 leading-relaxed">
-                          Rack C is experiencing thermal anomaly. Exhaust temperature exceeds safe threshold by 8°C.
-                          <span className="text-destructive font-medium"> Immediate attention required.</span>
-                        </p>
+                        <p className="text-sm font-medium text-foreground">System Healthy</p>
+                        <p className="text-xs text-muted-foreground">No anomalies detected in {selectedRack.name}</p>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 
-              {/* Charts */}
-              <div className="p-4 border-t border-border/50">
-                <ChartsPanel powerData={powerData} thermalData={thermalData} />
-              </div>
             </>
           ) : (
             /* Sustainability Tab Content */

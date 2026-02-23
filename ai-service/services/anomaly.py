@@ -34,6 +34,14 @@ def detect_anomaly(payload: dict):
     rack = payload["rackId"]
     metrics = payload["metrics"]
 
+    # Normalize rack ID if needed (e.g. "RackD" -> "D") to match scaler keys
+    if rack not in scalers and rack.replace("Rack", "") in scalers:
+        rack = rack.replace("Rack", "")
+
+    # Validate input length matches model window
+    if any(len(values) != WINDOW for values in metrics.values()):
+        raise HTTPException(status_code=400, detail=f"All metrics must have exactly {WINDOW} data points")
+
     # 1. Build the matrix in the CORRECT ORDER
     # Transpose (Features, Time) -> (Time, Features) to match model input shape (30, 7)
     X_raw = np.array([metrics[f] for f in FEATURES]).T

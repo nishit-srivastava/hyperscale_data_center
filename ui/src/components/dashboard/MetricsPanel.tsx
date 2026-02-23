@@ -138,7 +138,7 @@ export const MetricsPanel = ({ latestTelemetry, selectedRack, onRackSelect, anom
           <AlertTriangle className="w-5 h-5 text-destructive" />
           <div>
             <p className="text-sm font-semibold text-destructive">Anomaly Detected</p>
-            <p className="text-xs text-muted-foreground">{anomalyData.message} (Confidence: {(anomalyData.confidence * 100).toFixed(0)}%)</p>
+            <p className="text-xs text-muted-foreground">{selectedRack.name}: {anomalyData.message}</p>
           </div>
         </div>
       )}
