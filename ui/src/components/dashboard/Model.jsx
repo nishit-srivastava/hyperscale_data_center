@@ -8,8 +8,8 @@ import { useZoomToObject } from "../../hooks/useZoomToObject";
 
 
 const RACK_MAP = {
-  RackA: "Servers_dup_3",
-  RackB: "Servers_dup_6",
+  RackA: "ServersShape_ServerGlass_0",
+  RackB: "Servers_dup_4Shape_ServerGlass_0",
   RackC: "Servers_dup_2", // default focus
   RackD: "Servers_dup_5",
 };

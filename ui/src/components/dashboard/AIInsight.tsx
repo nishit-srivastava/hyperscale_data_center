@@ -95,7 +95,7 @@ export const AIInsight = ({ selectedRack, latestTelemetry }: AIInsightProps) => 
           </div>
           <p className="text-sm text-foreground/90 leading-relaxed">
             {isLoading ? "Loading short-term insights..." : (
-              insight?.message || "No insights available."
+              insight?.message ? `${selectedRack.name}: ${insight.message}` : "No insights available."
             )}
           </p>
         </div>

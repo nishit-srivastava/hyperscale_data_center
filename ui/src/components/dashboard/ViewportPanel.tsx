@@ -13,16 +13,18 @@ type DesignView = "telemetry" | "insight" | "anomalies";
 
 interface ViewportPanelProps {
   designView?: DesignView;
+  selectedRack?: { name: string } | null;
+  hasAnomaly?: boolean;
 }
 
-export const ViewportPanel = ({ designView = "telemetry" }: ViewportPanelProps) => {
+export const ViewportPanel = ({ designView = "telemetry", selectedRack, hasAnomaly = false }: ViewportPanelProps) => {
   const [isLoading] = useState(false);
 
   // Lovable → 3D intent mapping
-  const highlightedRack = designView === "anomalies" ? "C" : null;
-  const shouldZoom = designView === "anomalies";
-  const [selectedRack, setSelectedRack] = useState(null);
-  const anomalyRack = designView === "anomalies" ? "RackC" : null;
+  const rackLetter = selectedRack?.name?.split(" ")[1];
+  const highlightedRack = designView === "anomalies" ? "C" : (designView === "telemetry" && rackLetter ? rackLetter : null);
+  const shouldZoom = designView === "anomalies" || (designView === "telemetry" && !!highlightedRack);
+  const anomalyRack = (designView === "anomalies" && hasAnomaly) ? "RackC" : null;
 
 
   // React to designView changes
@@ -30,8 +32,8 @@ export const ViewportPanel = ({ designView = "telemetry" }: ViewportPanelProps) 
   if (!highlightedRack) return;
 
   const rackPrefixMap: Record<string, string> = {
-    A: "Servers_dup_3",
-    B: "Servers_dup_6",
+    A: "ServersShape_ServerGlass_0",
+    B: "Servers_dup_4Shape_ServerGlass_0",
     C: "Servers_dup_2",
     D: "Servers_dup_5",
   };
@@ -41,14 +43,14 @@ export const ViewportPanel = ({ designView = "telemetry" }: ViewportPanelProps) 
   if (!prefix) return;
 
   const tryApply = () => {
-    // const api = window.GLBViewerAPI;
-    // if (!api) return false;
+    const api = (window as any).GLBViewerAPI;
+    if (!api) return false;
 
-    // api.highlightRack?.(prefix);
+    api.highlightRack?.(prefix);
 
-    // if (shouldZoom) {
-    //   api.zoomTo?.(prefix);
-    // }
+    if (shouldZoom) {
+      api.zoomTo?.(prefix);
+    }
     return true;
   };
 
@@ -71,7 +73,7 @@ export const ViewportPanel = ({ designView = "telemetry" }: ViewportPanelProps) 
         <div className="flex items-center gap-3">
           <Box className="w-5 h-5 text-primary" />
           <span className="text-sm font-medium">3D Rack Visualization</span>
-          {designView === "anomalies" && (
+          {designView === "anomalies" && hasAnomaly && (
             <span className="px-2 py-0.5 text-xs font-medium bg-destructive/20 text-destructive rounded-full animate-pulse">
               Anomaly Detected
             </span>
@@ -110,8 +112,8 @@ export const ViewportPanel = ({ designView = "telemetry" }: ViewportPanelProps) 
             {/* REAL 3D VIEWER */}
             <GLBViewer
               glb="/models/server_room.glb"
-              selectedRack={selectedRack}
-              anomalyRack={designView === "anomalies" ? "RackC" : null}
+              selectedRack={selectedRack?.name}
+              anomalyRack={anomalyRack}
               showHTML={true}
             />
 

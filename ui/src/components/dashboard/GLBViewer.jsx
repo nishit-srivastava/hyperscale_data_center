@@ -58,7 +58,7 @@ export default function GLBViewer({ glb, selectedRack, anomalyRack,setModelClick
          {markerPos && (
           <RackMarker
             position={markerPos}
-            label={anomalyRack ? "⚠ Rack C" : "Rack C"}
+            label={anomalyRack ? "⚠ Rack C" : (selectedRack || "Rack C")}
             status={anomalyRack ? "anomaly" : "selected"}
           />
         )}

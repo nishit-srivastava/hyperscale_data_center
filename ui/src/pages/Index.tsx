@@ -211,7 +211,7 @@ const Index = () => {
           )}
           
           <div className="flex-1">
-            <ViewportPanel designView={designView} />
+            <ViewportPanel designView={designView} selectedRack={selectedRack} hasAnomaly={anomalyData?.status === "ANOMALY"} />
           </div>
         </div>
 
