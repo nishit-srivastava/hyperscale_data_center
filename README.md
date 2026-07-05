@@ -1,7 +1,6 @@
 # AI-Enabled Digital Twin for Sustainable Hyperscale Data Centers
 
-**M.Tech Dissertation (AIMLCZG628T) — BITS Pilani WILP**
-Dissertation work carried out at Nehish Software Solution Pvt Ltd, Bangalore, under the supervision of **Tushar Ranjan**.
+
 
 An AI-powered digital twin that models server racks, workloads, and thermal dynamics in a hyperscale data center, combining real-time IoT telemetry simulation, deep learning forecasting/anomaly models, and an interactive 3D visualization layer to support sustainability-focused operational decisions.
 
